@@ -115,12 +115,14 @@ class ProfileScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Achievement Badges', style: Theme.of(context).textTheme.displayMedium),
-                  Text('Your milestones in the Western Ghats', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.outline)),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Achievement Badges', style: Theme.of(context).textTheme.displayMedium),
+                    Text('Your milestones in the Western Ghats', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.outline)),
+                  ],
+                ),
               ),
               TextButton.icon(
                 onPressed: () {},
@@ -198,16 +200,18 @@ class ProfileScreen extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Torna Fort Expedition', style: Theme.of(context).textTheme.displaySmall),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Difficult • 12.4 km total • 840m Elevation',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.outline, fontSize: 14),
-                              ),
-                            ],
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Torna Fort Expedition', style: Theme.of(context).textTheme.displaySmall),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Difficult • 12.4 km total • 840m Elevation',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.outline, fontSize: 14),
+                                ),
+                              ],
+                            ),
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

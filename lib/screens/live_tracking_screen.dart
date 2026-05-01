@@ -128,22 +128,30 @@ class LiveTrackingScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(icon, size: 14, color: AppColors.onSurfaceVariant),
-              const SizedBox(width: 4),
-              Text(label, style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10)),
-            ],
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              children: [
+                Icon(icon, size: 14, color: AppColors.onSurfaceVariant),
+                const SizedBox(width: 4),
+                Text(label, style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10)),
+              ],
+            ),
           ),
           const SizedBox(height: 4),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(value, style: Theme.of(context).textTheme.displayMedium),
-              const SizedBox(width: 2),
-              Text(unit, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.onSurfaceVariant)),
-            ],
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(value, style: Theme.of(context).textTheme.displayMedium),
+                const SizedBox(width: 2),
+                Text(unit, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.onSurfaceVariant)),
+              ],
+            ),
           ),
         ],
       ),
