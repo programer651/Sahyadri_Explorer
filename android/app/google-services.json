@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "499111016019",
+    "project_id": "sahyadri-explorer-b9c7d",
+    "storage_bucket": "sahyadri-explorer-b9c7d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:499111016019:android:a1a62cee611dc53171b8a6",
+        "android_client_info": {
+          "package_name": "com.example.sahyadri_explorer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "499111016019-d2io91pigjk8rgnciu9n089mf6aikkis.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sahyadri_explorer",
+            "certificate_hash": "b8b2ae1932024af2125bed5d502396f4e7741db5"
+          }
+        },
+        {
+          "client_id": "499111016019-aftr1pm71lpj9he4vdc0ottp95l71qkk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBC8WURCrLAQIBxhf_9Mv2aJuqyEHIf4Hk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "499111016019-aftr1pm71lpj9he4vdc0ottp95l71qkk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "499111016019-e4upqtb076sel0tugugm5flftsegalf8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.sahyadriExplorer"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

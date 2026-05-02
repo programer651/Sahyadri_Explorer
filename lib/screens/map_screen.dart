@@ -68,7 +68,7 @@ class MapScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(999),
               ),
               elevation: 8,
-              shadowColor: AppColors.secondary.withOpacity(0.3),
+              shadowColor: AppColors.secondary.withValues(alpha: 0.3),
               textStyle: Theme.of(context).textTheme.displaySmall?.copyWith(
                 fontSize: 16,
                 letterSpacing: 1.2,
@@ -85,11 +85,11 @@ class MapScreen extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.95),
+              color: Colors.white.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(32),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryContainer.withOpacity(0.08),
+                  color: AppColors.primaryContainer.withValues(alpha: 0.08),
                   blurRadius: 20,
                   offset: const Offset(0, -4),
                 ),
@@ -189,7 +189,7 @@ class MapScreen extends StatelessWidget {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(Symbols.directions, color: AppColors.primary),
@@ -211,10 +211,10 @@ class MapScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.outline.withOpacity(0.1)),
+        border: Border.all(color: AppColors.outline.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
           ),
         ],
@@ -231,11 +231,11 @@ class MapScreen extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white.withValues(alpha: 0.9),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
           ),
         ],
@@ -257,7 +257,7 @@ class MapScreen extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.05),
+              color: iconColor.withValues(alpha: 0.05),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: iconColor, size: 20),
@@ -314,7 +314,7 @@ class MapMarker extends StatelessWidget {
                     width: 40 + (20 * value),
                     height: 40 + (20 * value),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1 * (1 - value)),
+                      color: AppColors.primary.withValues(alpha: 0.1 * (1 - value)),
                       shape: BoxShape.circle,
                     ),
                   );
@@ -329,7 +329,7 @@ class MapMarker extends StatelessWidget {
                 border: Border.all(color: Colors.white, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 8,
                   ),
                 ],
@@ -344,10 +344,10 @@ class MapMarker extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: AppColors.outline.withOpacity(0.1)),
+            border: Border.all(color: AppColors.outline.withValues(alpha: 0.1)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 4,
               ),
             ],

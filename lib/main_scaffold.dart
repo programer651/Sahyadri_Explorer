@@ -71,11 +71,11 @@ class _MainScaffoldState extends State<MainScaffold> {
       bottomNavigationBar: Container(
         height: 96,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.8),
+          color: Colors.white.withValues(alpha: 0.8),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primaryContainer.withOpacity(0.04),
+              color: AppColors.primaryContainer.withValues(alpha: 0.04),
               blurRadius: 20,
               offset: const Offset(0, -4),
             ),
