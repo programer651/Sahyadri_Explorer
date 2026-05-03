@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import '../models/fort_model.dart';
 import '../theme.dart';
 
 class LiveTrackingScreen extends StatelessWidget {
-  const LiveTrackingScreen({super.key});
+  final Fort? activeFort;
+
+  const LiveTrackingScreen({super.key, this.activeFort});
 
   @override
   Widget build(BuildContext context) {

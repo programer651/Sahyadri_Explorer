@@ -1,363 +1,280 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import '../models/fort_model.dart';
 import '../theme.dart';
 
-class MapScreen extends StatelessWidget {
-  const MapScreen({super.key});
+class MapScreen extends StatefulWidget {
+  final void Function(Fort)? onStartTrek;
+
+  const MapScreen({super.key, this.onStartTrek});
 
   @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Map Placeholder Background
-        Positioned.fill(
-          child: Container(
-            color: const Color(0xFFE4E2DE),
-            child: Image.network(
-              'https://lh3.googleusercontent.com/aida-public/AB6AXuC4VRf7jg21y_vH5EX5wRD7Q4jXKVStsuRGXA9zksSYI4Y155GX4yeOyUeBc2zd3mm2T_hu4v0lHjhPRStkwrE2OHr2pBIxtw7S6TThPWDAuokJmXCDPr8gAyzmY6pXOWkne3-6gFBSfnnL8gp5Ywh5enLYEwS-osiZ76fYYmrobfWNSGLpOtuI464_cfeTTjcPnwwge-P7bjPQS9z9PWbRdOSsyaGDFa9cKwH0jjaQjiDPnHhH7Xm6tAzeVvjS8D2LPdLvqiLId_E',
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-
-        // Map Markers
-        const Positioned(
-          top: 300,
-          left: 180,
-          child: MapMarker(title: 'Raigad Fort', isSelected: true),
-        ),
-
-        Positioned(
-          top: 200,
-          right: 80,
-          child: _buildSecondaryMarker(),
-        ),
-
-        Positioned(
-          bottom: 350,
-          left: 60,
-          child: _buildSecondaryMarker(),
-        ),
-
-        // Floating Action Buttons (Top Right)
-        Positioned(
-          top: 24,
-          right: 24,
-          child: Column(
-            children: [
-              _buildFloatingButton(Symbols.my_location),
-              const SizedBox(height: 16),
-              _buildFloatingButton(Symbols.layers),
-            ],
-          ),
-        ),
-
-        // Start Tracking Button
-        Positioned(
-          bottom: 260,
-          right: 24,
-          child: ElevatedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Symbols.play_arrow, fill: 1),
-            label: const Text('START TRACKING'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.secondary,
-              foregroundColor: AppColors.onSecondary,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-              ),
-              elevation: 8,
-              shadowColor: AppColors.secondary.withValues(alpha: 0.3),
-              textStyle: Theme.of(context).textTheme.displaySmall?.copyWith(
-                fontSize: 16,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ),
-        ),
-
-        // Bottom Detail Card
-        Positioned(
-          bottom: 110,
-          left: 16,
-          right: 16,
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.95),
-              borderRadius: BorderRadius.circular(32),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primaryContainer.withValues(alpha: 0.08),
-                  blurRadius: 20,
-                  offset: const Offset(0, -4),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 48,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Raigad Fort',
-                          style: Theme.of(context).textTheme.displayMedium,
-                        ),
-                        Text(
-                          'Capital of the Maratha Empire',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        color: AppColors.surfaceContainer,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Symbols.favorite, color: AppColors.primary),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildInfoItem(
-                        context,
-                        Symbols.distance,
-                        'DISTANCE',
-                        '12km',
-                        AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildInfoItem(
-                        context,
-                        Symbols.signal_cellular_alt,
-                        'DIFFICULTY',
-                        'Moderate',
-                        AppColors.secondary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: const Text('View Details'),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Icon(Symbols.directions, color: AppColors.primary),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSecondaryMarker() {
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.outline.withValues(alpha: 0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-          ),
-        ],
-      ),
-      child: const Opacity(
-        opacity: 0.6,
-        child: Icon(Symbols.fort, size: 16, color: AppColors.primary),
-      ),
-    );
-  }
-
-  Widget _buildFloatingButton(IconData icon) {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: Icon(icon, color: AppColors.primary),
-    );
-  }
-
-  Widget _buildInfoItem(BuildContext context, IconData icon, String label, String value, Color iconColor) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.05),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontSize: 10,
-                    letterSpacing: 0.8,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    value,
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 18),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  State<MapScreen> createState() => _MapScreenState();
 }
 
-class MapMarker extends StatelessWidget {
-  final String title;
-  final bool isSelected;
-
-  const MapMarker({super.key, required this.title, this.isSelected = false});
+class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
+  final MapController _mapController = MapController();
+  late final AnimationController _animationController;
+  
+  // Center roughly around India
+  final LatLng _indiaCenter = const LatLng(20.5937, 78.9629);
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            if (isSelected)
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0.0, end: 1.0),
-                duration: const Duration(seconds: 2),
-                builder: (context, value, child) {
-                  return Container(
-                    width: 40 + (20 * value),
-                    height: 40 + (20 * value),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1 * (1 - value)),
-                      shape: BoxShape.circle,
-                    ),
-                  );
-                },
-              ),
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 8,
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _animatedMapMove(LatLng destLocation, double destZoom) {
+    if (!mounted) return;
+    
+    final latTween = Tween<double>(
+        begin: _mapController.camera.center.latitude, end: destLocation.latitude);
+    final lngTween = Tween<double>(
+        begin: _mapController.camera.center.longitude, end: destLocation.longitude);
+    final zoomTween = Tween<double>(
+        begin: _mapController.camera.zoom, end: destZoom);
+
+    final Animation<double> animation = CurvedAnimation(
+        parent: _animationController, curve: Curves.fastOutSlowIn);
+
+    _animationController.reset();
+    
+    void listener() {
+      _mapController.move(
+          LatLng(latTween.evaluate(animation), lngTween.evaluate(animation)),
+          zoomTween.evaluate(animation));
+    }
+    
+    animation.addListener(listener);
+    _animationController.forward().whenComplete(() {
+      animation.removeListener(listener);
+    });
+  }
+
+  void _showFortDetails(BuildContext context, Fort fort) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: AppColors.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
                   ),
+                ),
+              ),
+              
+              Text(
+                fort.name,
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  color: AppColors.onSurface,
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              Row(
+                children: [
+                  _buildPill(Symbols.hiking, fort.difficulty, AppColors.secondary),
+                  const SizedBox(width: 12),
+                  _buildPill(Symbols.timer, fort.estimatedTime, AppColors.primary),
                 ],
               ),
-              child: const Icon(Symbols.fort, size: 20, color: Colors.white, fill: 1),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: AppColors.outline.withValues(alpha: 0.1)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 4,
+              const SizedBox(height: 16),
+              
+              Text(
+                fort.description,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 32),
+              
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close the bottom sheet
+                    if (widget.onStartTrek != null) {
+                      widget.onStartTrek!(fort);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Start Trek',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
             ],
           ),
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 12),
+        );
+      },
+    );
+  }
+
+  Widget _buildPill(IconData icon, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
           ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth == 0 || constraints.maxHeight == 0) {
+            return const SizedBox.shrink();
+          }
+          return FlutterMap(
+            key: const ValueKey('SathyadriMapV1'),
+            mapController: _mapController,
+            options: MapOptions(
+              initialCenter: _indiaCenter,
+              initialZoom: 5.0,
+              minZoom: 4.0,
+              maxZoom: 18.0,
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+              ),
+              cameraConstraint: CameraConstraint.contain(
+                bounds: LatLngBounds(
+                  const LatLng(6.0, 68.0), // South-West
+                  const LatLng(37.0, 97.0), // North-East
+                ),
+              ),
+            ),
+        children: [
+          TileLayer(
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: 'com.example.sahyadri_explorer',
+          ),
+          MarkerLayer(
+            markers: Fort.staticForts.map((fort) {
+              return Marker(
+                point: fort.location,
+                width: 100,
+                height: 80,
+                alignment: Alignment.topCenter,
+                child: GestureDetector(
+                  onTap: () => _showFortDetails(context, fort),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 6,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Symbols.fort,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.outlineVariant),
+                        ),
+                        child: Text(
+                          fort.name,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      );
+        },
+      ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 96.0), // Above the bottom nav bar
+        child: FloatingActionButton(
+          onPressed: () {
+            // Animate back to India center
+            _animatedMapMove(_indiaCenter, 5.0);
+          },
+          backgroundColor: Colors.white,
+          child: const Icon(Symbols.my_location, color: AppColors.primary),
         ),
-      ],
+      ),
     );
   }
 }

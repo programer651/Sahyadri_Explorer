@@ -5,6 +5,7 @@ import 'screens/live_tracking_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/settings_screen.dart';
 import 'widgets/app_drawer.dart';
+import 'models/fort_model.dart';
 import 'theme.dart';
 
 class MainScaffold extends StatefulWidget {
@@ -16,10 +17,18 @@ class MainScaffold extends StatefulWidget {
 
 class _MainScaffoldState extends State<MainScaffold> {
   int _selectedIndex = 0;
+  Fort? _activeFort;
 
-  final List<Widget> _screens = [
-    const MapScreen(),
-    const LiveTrackingScreen(),
+  late final List<Widget> _screens = [
+    MapScreen(
+      onStartTrek: (fort) {
+        setState(() {
+          _activeFort = fort;
+          _selectedIndex = 1; // Switch to Live tracking tab
+        });
+      },
+    ),
+    LiveTrackingScreen(activeFort: _activeFort),
     const ProfileScreen(),
   ];
 
@@ -81,20 +90,24 @@ class _MainScaffoldState extends State<MainScaffold> {
           ),
         ],
       ),
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: Container(
-        height: 96,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.8),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryContainer.withValues(alpha: 0.04),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
+      body: _selectedIndex == 1 
+          ? LiveTrackingScreen(activeFort: _activeFort) // dynamically pass active fort
+          : _screens[_selectedIndex],
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          height: 80,
+          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryContainer.withValues(alpha: 0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -103,6 +116,7 @@ class _MainScaffoldState extends State<MainScaffold> {
             _buildNavItem(2, Symbols.person, 'Profile'),
           ],
         ),
+      ),
       ),
     );
   }
