@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../models/fort_model.dart';
+import '../repositories/fort_repository.dart';
 import '../theme.dart';
 
 class MapScreen extends StatefulWidget {
@@ -21,6 +22,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   // Center roughly around India
   final LatLng _indiaCenter = const LatLng(20.5937, 78.9629);
 
+  List<Fort> _forts = [];
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -28,6 +32,17 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 700),
     );
+    _loadForts();
+  }
+
+  Future<void> _loadForts() async {
+    final forts = await FortRepository.loadForts();
+    if (mounted) {
+      setState(() {
+        _forts = forts;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -107,6 +122,14 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                   _buildPill(Symbols.timer, fort.estimatedTime, AppColors.primary),
                 ],
               ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _buildPill(Symbols.location_on, fort.district, const Color(0xFF0EA5E9)),
+                  const SizedBox(width: 12),
+                  _buildPill(Symbols.height, fort.height, const Color(0xFFF59E0B)),
+                ],
+              ),
               const SizedBox(height: 16),
               
               Text(
@@ -178,8 +201,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: LayoutBuilder(
-        builder: (context, constraints) {
+      body: _isLoading 
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          : LayoutBuilder(
+              builder: (context, constraints) {
           if (constraints.maxWidth == 0 || constraints.maxHeight == 0) {
             return const SizedBox.shrink();
           }
@@ -207,7 +232,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             userAgentPackageName: 'com.example.sahyadri_explorer',
           ),
           MarkerLayer(
-            markers: Fort.staticForts.map((fort) {
+            markers: _forts.map((fort) {
               return Marker(
                 point: fort.location,
                 width: 100,
