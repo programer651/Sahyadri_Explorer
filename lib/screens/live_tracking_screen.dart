@@ -1,260 +1,141 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../models/fort_model.dart';
+import '../state/trek_state_manager.dart';
+import '../widgets/live_trek_stats_widget.dart';
+import '../widgets/trek_summary_dialog.dart';
 import '../theme.dart';
+// Note: You can still swap between MockGpsTrackingService and GeolocatorTrackingService in TrekStateManager!
+import '../services/gps_tracking_service.dart';
 
-class LiveTrackingScreen extends StatelessWidget {
+class LiveTrackingScreen extends StatefulWidget {
   final Fort? activeFort;
 
   const LiveTrackingScreen({super.key, this.activeFort});
 
   @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Map Background
-        Positioned.fill(
-          child: Image.network(
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuCLp4EA1eMfEt54EaRLiLKAtI5EJa_lA5lHMsRKgJ854QnKLaAvaKLw4rZyBbkGCS_yb38X0mciHgmI_wxH6qMdLgdE5ahDFFH8y7n5Qo-AsKUi_SrqN-uZi5j4qBDU08OaOsNmOiEjN2LdJRd7d5Vf2Op93y-4wEw0TJkVFbR5frCgC6YoPGaKUUCnb8_KORA-cFV9Jpp8tS3v1qdpvHE7LIoSXDFe9duiLuJNmcbsdaeT3S9G_oHaRCoGwLOMbBkBQf5rw0gl6kY',
-            fit: BoxFit.cover,
-          ),
-        ),
+  State<LiveTrackingScreen> createState() => _LiveTrackingScreenState();
+}
 
-        // Path Overlay
-        Center(
-          child: Opacity(
-            opacity: 0.8,
-            child: Icon(Symbols.route, size: 300, color: AppColors.secondary.withValues(alpha: 0.5)),
-          ),
-        ),
+class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTickerProviderStateMixin {
+  final MapController _mapController = MapController();
+  late final TrekStateManager _stateManager;
+  
+  bool _isFocusMode = false;
+  late AnimationController _pulseController;
 
-        // Top Stats Bento
-        Positioned(
-          top: 16,
-          left: 16,
-          right: 16,
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(child: _buildStatCard(context, Symbols.distance, 'DISTANCE', '4.2', 'km')),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildStatCard(context, Symbols.timer, 'TIME', '01:15', ':30')),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildStatCard(context, Symbols.speed, 'SPEED', '3.5', 'km/h')),
-                ],
-              ),
-              const SizedBox(height: 12),
-              _buildElevationBanner(context),
-            ],
-          ),
-        ),
+  @override
+  void initState() {
+    super.initState();
+    // Real production GPS tracking. 
+    _stateManager = TrekStateManager(trackingService: GeolocatorTrackingService());
+    
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
 
-        // Compass
-        Positioned(
-          top: 180,
-          right: 16,
-          child: _buildCompass(),
-        ),
+    if (widget.activeFort != null) {
+      _stateManager.initialize(widget.activeFort!);
+    }
 
-        // Action Controls
-        Positioned(
-          bottom: 160,
-          left: 0,
-          right: 0,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildRoundAction(Symbols.stop, Colors.red, isOutlined: true),
-              const SizedBox(width: 24),
-              _buildMainAction(Symbols.pause),
-              const SizedBox(width: 24),
-              _buildRoundAction(Symbols.flag, AppColors.primary, isOutlined: true),
-            ],
-          ),
-        ),
-
-        // Progress Indicator
-        Positioned(
-          bottom: 110,
-          left: 0,
-          right: 0,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.6),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('TRAIL COMPLETION', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10)),
-                    Text('65%', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.primary)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  height: 4,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainer,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                  child: FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: 0.65,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
+    _stateManager.addListener(_onStateChanged);
   }
 
-  Widget _buildStatCard(BuildContext context, IconData icon, String label, String value, String unit) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.05)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Row(
-              children: [
-                Icon(icon, size: 14, color: AppColors.onSurfaceVariant),
-                const SizedBox(width: 4),
-                Text(label, style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(value, style: Theme.of(context).textTheme.displayMedium),
-                const SizedBox(width: 2),
-                Text(unit, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.onSurfaceVariant)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+  void _onStateChanged() {
+    if (!mounted) return;
+    
+    if (_stateManager.currentLocation != null) {
+      _mapController.move(_stateManager.currentLocation!, 16.0);
+    }
+    
+    if (_stateManager.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_stateManager.errorMessage!),
+          backgroundColor: Colors.red,
+        ),
+      );
+      _stateManager.errorMessage = null; // Clear it so it doesn't spam
+    }
+    
+    setState(() {}); // Rebuild UI
   }
 
-  Widget _buildElevationBanner(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppColors.primaryContainer,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Symbols.filter_hdr, color: Colors.white, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('ELEVATION GAIN', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white.withValues(alpha: 0.6), fontSize: 10)),
-                  Text('240m', style: Theme.of(context).textTheme.displaySmall?.copyWith(color: Colors.white)),
-                ],
-              ),
-            ],
-          ),
-          // Simplified Sparkline
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: List.generate(7, (index) {
-              final heights = [0.2, 0.35, 0.5, 0.3, 0.65, 0.8, 0.95];
-              return Container(
-                margin: const EdgeInsets.only(left: 2),
-                width: 4,
-                height: 32 * heights[index],
-                decoration: BoxDecoration(
-                  color: index == 6 ? AppColors.secondary : Colors.white.withValues(alpha: 0.2 + (index * 0.1)),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              );
-            }),
-          ),
-        ],
-      ),
-    );
+  @override
+  void dispose() {
+    _stateManager.removeListener(_onStateChanged);
+    _stateManager.dispose();
+    _pulseController.dispose();
+    super.dispose();
   }
 
-  Widget _buildCompass() {
+  void _toggleFocusMode() {
+    if (_stateManager.isApproaching || _stateManager.isReady) return;
+    setState(() {
+      _isFocusMode = !_isFocusMode;
+    });
+  }
+
+  Widget _buildApproachBanner() {
+    final distKm = (_stateManager.distanceToFortMeters / 1000).toStringAsFixed(2);
+    final isReady = _stateManager.isReady;
+
     return Container(
-      width: 64,
-      height: 64,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 20,
-          ),
-        ],
-      ),
+      color: Colors.black.withValues(alpha: 0.4),
       child: Center(
         child: Container(
-          width: 48,
-          height: 48,
+          margin: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: AppColors.surfaceContainerHigh),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 20)
+            ]
           ),
-          child: Stack(
-            alignment: Alignment.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              const Positioned(
-                top: 2,
-                child: Text('N', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: AppColors.outline)),
+              Icon(
+                isReady ? Symbols.verified : Symbols.directions_walk,
+                size: 48,
+                color: isReady ? AppColors.secondary : AppColors.primary,
               ),
-              Transform.rotate(
-                angle: 0.785, // 45 degrees
-                child: Container(
-                  width: 2,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary,
-                    borderRadius: BorderRadius.circular(1),
+              const SizedBox(height: 16),
+              Text(
+                _stateManager.session!.activeFort.name,
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              if (!isReady)
+                Text(
+                  'Distance to Fort Region: $distKm km\nGet within 1km to start trekking.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.grey, height: 1.5),
+                ),
+              if (isReady)
+                const Text(
+                  'You have arrived at the base!\nReady to begin the ascent?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500, height: 1.5),
+                ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: 200,
+                child: ElevatedButton.icon(
+                  onPressed: isReady ? () => _stateManager.startTrek() : null,
+                  icon: const Icon(Symbols.explore),
+                  label: const Text('Start Trek', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: Colors.grey.shade300,
+                    disabledForegroundColor: Colors.grey.shade500,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                 ),
               ),
@@ -265,41 +146,165 @@ class LiveTrackingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRoundAction(IconData icon, Color color, {bool isOutlined = false}) {
-    return Container(
-      width: 64,
-      height: 64,
-      decoration: BoxDecoration(
-        color: isOutlined ? Colors.white.withValues(alpha: 0.9) : color,
-        shape: BoxShape.circle,
-        border: isOutlined ? Border.all(color: color, width: 2) : null,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: Icon(icon, color: isOutlined ? color : Colors.white, size: 32, fill: 1),
-    );
-  }
+  @override
+  Widget build(BuildContext context) {
+    if (widget.activeFort == null || _stateManager.session == null) {
+      return const Center(child: Text('No Active Trek.'));
+    }
 
-  Widget _buildMainAction(IconData icon) {
-    return Container(
-      width: 96,
-      height: 96,
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+    final session = _stateManager.session!;
+    final currentLocation = _stateManager.currentLocation;
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          // FlutterMap
+          GestureDetector(
+            onTap: _toggleFocusMode,
+            child: FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: session.activeFort.location,
+                initialZoom: 15.0,
+                interactionOptions: const InteractionOptions(
+                  flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+                ),
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+                  subdomains: const ['a', 'b', 'c'],
+                  userAgentPackageName: 'com.example.sahyadri_explorer',
+                ),
+                
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: session.activeFort.location,
+                      width: 50,
+                      height: 50,
+                      child: const Icon(Symbols.flag, color: Colors.red, size: 40),
+                    ),
+                  ],
+                ),
+
+                if (_stateManager.isTrekking || _stateManager.isPaused)
+                  PolylineLayer(
+                    polylines: [
+                      Polyline(
+                        points: session.routePoints,
+                        color: const Color(0xFFF97316),
+                        strokeWidth: 6.0,
+                      ),
+                    ],
+                  ),
+
+                if (currentLocation != null)
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: currentLocation,
+                        width: 40,
+                        height: 40,
+                        child: AnimatedBuilder(
+                          animation: _pulseController,
+                          builder: (context, child) {
+                            return Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: 20 + (_pulseController.value * 20),
+                                  height: 20 + (_pulseController.value * 20),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.blue.withValues(alpha: 1.0 - _pulseController.value),
+                                  ),
+                                ),
+                                Container(
+                                  width: 16,
+                                  height: 16,
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 2),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
           ),
+
+          // Top Progress Bar & Stats
+          if (_stateManager.isTrekking || _stateManager.isPaused)
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              top: _isFocusMode ? -200 : 50,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                child: LiveTrekStatsWidget(
+                  session: session, 
+                  completionPercentage: _stateManager.completionPercentage,
+                ),
+              ),
+            ),
+
+          // Approach Banner
+          if (_stateManager.isApproaching || _stateManager.isReady)
+            _buildApproachBanner(),
+
+          // Bottom Controls
+          if (_stateManager.isTrekking || _stateManager.isPaused)
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              bottom: _isFocusMode ? -150 : 120,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (_stateManager.isTrekking)
+                    FloatingActionButton.large(
+                      heroTag: 'pause',
+                      onPressed: () => _stateManager.pauseTrek(),
+                      backgroundColor: Colors.white,
+                      child: const Icon(Symbols.pause, color: AppColors.primary, size: 36),
+                    ),
+                  if (_stateManager.isPaused)
+                    FloatingActionButton.large(
+                      heroTag: 'resume',
+                      onPressed: () => _stateManager.resumeTrek(),
+                      backgroundColor: AppColors.primary,
+                      child: const Icon(Symbols.play_arrow, color: Colors.white, size: 36),
+                    ),
+                  const SizedBox(width: 32),
+                  FloatingActionButton.extended(
+                    heroTag: 'end',
+                    onPressed: () => _stateManager.endTrek(),
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    icon: const Icon(Symbols.stop),
+                    label: const Text('Abandon', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ),
+            
+          // Victory / Defeat Overlay (TrekSummaryDialog)
+          if (_stateManager.isCompleted || _stateManager.isAbandoned)
+            TrekSummaryDialog(
+              session: session, 
+              isVictory: _stateManager.isCompleted, 
+              completionPercentage: _stateManager.completionPercentage,
+            ),
         ],
       ),
-      child: Icon(icon, color: Colors.white, size: 48, fill: 1),
     );
   }
 }
