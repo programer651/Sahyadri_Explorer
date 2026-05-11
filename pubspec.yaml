@@ -41,7 +41,9 @@ dependencies:
   google_sign_in: ^6.2.1
   flutter_map: ^8.3.0 
   latlong2: ^0.9.1 
-  flutter_map_marker_cluster:
+  flutter_map_marker_cluster: ^8.2.2
+  geolocator: ^13.0.0
+  shared_preferences: ^2.3.2
 
 dev_dependencies:
   flutter_test:
