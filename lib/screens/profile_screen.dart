@@ -1,12 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import '../services/conquest_storage_service.dart';
 import '../theme.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final ConquestStorageService _storageService = ConquestStorageService();
+  ConquestStats? _stats;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    final stats = await _storageService.getStats();
+    setState(() {
+      _stats = stats;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // If stats aren't loaded yet, show empty or loading
+    final totalDistance = _stats?.totalDistanceKm.toString() ?? '0';
+    final totalConquered = _stats?.conqueredFortIds.length.toString() ?? '0';
+    final totalTreks = _stats?.totalTreks.toString() ?? '0';
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
       child: Column(
@@ -90,7 +117,7 @@ class ProfileScreen extends StatelessWidget {
 
           const SizedBox(height: 40),
 
-          // Stats Grid
+          // Stats Grid (Dynamic Data!)
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -99,11 +126,11 @@ class ProfileScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _buildStatRow(context, Symbols.route, 'TOTAL DISTANCE', '120', 'km', AppColors.primaryFixedDim.withValues(alpha: 0.2), AppColors.primary),
+                _buildStatRow(context, Symbols.route, 'TOTAL DISTANCE', totalDistance, 'km', AppColors.primaryFixedDim.withValues(alpha: 0.2), AppColors.primary),
                 const Divider(height: 1, color: Color(0x0D061B0E)),
-                _buildStatRow(context, Symbols.fort, 'FORTS CONQUERED', '8', '', AppColors.secondaryFixed.withValues(alpha: 0.2), AppColors.secondary),
+                _buildStatRow(context, Symbols.fort, 'FORTS CONQUERED', totalConquered, '', AppColors.secondaryFixed.withValues(alpha: 0.2), AppColors.secondary),
                 const Divider(height: 1, color: Color(0x0D061B0E)),
-                _buildStatRow(context, Symbols.landscape, 'TOTAL TREKS', '15', '', AppColors.tertiaryFixed.withValues(alpha: 0.3), AppColors.tertiary),
+                _buildStatRow(context, Symbols.landscape, 'TOTAL TREKS', totalTreks, '', AppColors.tertiaryFixed.withValues(alpha: 0.3), AppColors.tertiary),
               ],
             ),
           ),
