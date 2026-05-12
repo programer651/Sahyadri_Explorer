@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../models/trek_session_model.dart';
-import '../theme.dart';
 
 class TrekStatsWidget extends StatefulWidget {
   final TrekSession session;
@@ -24,12 +23,9 @@ class _TrekStatsWidgetState extends State<TrekStatsWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _isExpanded = !_isExpanded;
-        });
-      },
+      onTap: () => setState(() => _isExpanded = !_isExpanded),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.fastOutSlowIn,
@@ -39,8 +35,9 @@ class _TrekStatsWidgetState extends State<TrekStatsWidget> {
           vertical: _isExpanded ? 20 : 12,
         ),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.85), // Semi-transparent
+          color: colorScheme.surface.withValues(alpha: 0.85),
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.1),
@@ -56,28 +53,28 @@ class _TrekStatsWidgetState extends State<TrekStatsWidget> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildCompactStat('${widget.session.distanceCoveredKm.toStringAsFixed(2)} KM'),
-                _buildDot(),
-                _buildCompactStat(_formatDuration(widget.session.timeElapsed)),
-                _buildDot(),
-                _buildCompactStat('${widget.session.currentSpeedKmh.toStringAsFixed(1)} km/h'),
-                _buildDot(),
-                _buildCompactStat('↑${widget.session.elevationGainMeters.toInt()}m'),
+                _buildCompactStat(context, '${widget.session.distanceCoveredKm.toStringAsFixed(2)} KM'),
+                _buildDot(context),
+                _buildCompactStat(context, _formatDuration(widget.session.timeElapsed)),
+                _buildDot(context),
+                _buildCompactStat(context, '${widget.session.currentSpeedKmh.toStringAsFixed(1)} km/h'),
+                _buildDot(context),
+                _buildCompactStat(context, '↑${widget.session.elevationGainMeters.toInt()}m'),
               ],
             ),
             
             // Expanded View Details
             if (_isExpanded) ...[
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Divider(),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildDetailedStat(Symbols.distance, 'Distance', '${widget.session.distanceCoveredKm.toStringAsFixed(2)}', 'km'),
-                  _buildDetailedStat(Symbols.timer, 'Time', _formatDuration(widget.session.timeElapsed), ''),
-                  _buildDetailedStat(Symbols.speed, 'Speed', '${widget.session.currentSpeedKmh.toStringAsFixed(1)}', 'km/h'),
+                  _buildDetailedStat(context, Symbols.distance, 'Distance', '${widget.session.distanceCoveredKm.toStringAsFixed(2)}', 'km'),
+                  _buildDetailedStat(context, Symbols.timer, 'Time', _formatDuration(widget.session.timeElapsed), ''),
+                  _buildDetailedStat(context, Symbols.speed, 'Speed', '${widget.session.currentSpeedKmh.toStringAsFixed(1)}', 'km/h'),
                 ],
               ),
             ]
@@ -87,38 +84,39 @@ class _TrekStatsWidgetState extends State<TrekStatsWidget> {
     );
   }
 
-  Widget _buildCompactStat(String text) {
+  Widget _buildCompactStat(BuildContext context, String text) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontWeight: FontWeight.bold,
         fontSize: 14,
-        color: AppColors.onSurface,
+        color: Theme.of(context).colorScheme.onSurface,
       ),
     );
   }
 
-  Widget _buildDot() {
+  Widget _buildDot(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Icon(
         Icons.circle,
         size: 4,
-        color: AppColors.onSurface.withValues(alpha: 0.4),
+        color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
       ),
     );
   }
 
-  Widget _buildDetailedStat(IconData icon, String label, String value, String unit) {
+  Widget _buildDetailedStat(BuildContext context, IconData icon, String label, String value, String unit) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
-        Icon(icon, color: AppColors.primary, size: 28),
+        Icon(icon, color: colorScheme.primary, size: 28),
         const SizedBox(height: 8),
         Text(
           label,
           style: TextStyle(
             fontSize: 12,
-            color: AppColors.onSurface.withValues(alpha: 0.6),
+            color: colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -129,10 +127,10 @@ class _TrekStatsWidgetState extends State<TrekStatsWidget> {
           children: [
             Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: AppColors.onSurface,
+                color: colorScheme.onSurface,
               ),
             ),
             if (unit.isNotEmpty) ...[
@@ -141,7 +139,7 @@ class _TrekStatsWidgetState extends State<TrekStatsWidget> {
                 unit,
                 style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.onSurface.withValues(alpha: 0.6),
+                  color: colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.bold,
                 ),
               ),

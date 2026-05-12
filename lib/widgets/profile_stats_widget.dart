@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import '../theme.dart';
 
 class ProfileStatsWidget extends StatelessWidget {
   final double totalDistance;
@@ -18,12 +17,13 @@ class ProfileStatsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
@@ -32,15 +32,15 @@ class ProfileStatsWidget extends StatelessWidget {
               offset: const Offset(0, 10),
             ),
           ],
-          border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
+          border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildStatItem(context, Symbols.route, totalDistance.toStringAsFixed(1), 'KM DISTANCE'),
-            _buildDivider(),
+            _buildDivider(context),
             _buildStatItem(context, Symbols.fort, fortsConquered.toString(), 'FORTS'),
-            _buildDivider(),
+            _buildDivider(context),
             _buildStatItem(context, Symbols.landscape, totalTreks.toString(), 'TREKS'),
           ],
         ),
@@ -48,18 +48,19 @@ class ProfileStatsWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildDivider() {
+  Widget _buildDivider(BuildContext context) {
     return Container(
       height: 40,
       width: 1,
-      color: AppColors.outlineVariant.withValues(alpha: 0.5),
+      color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
     );
   }
 
   Widget _buildStatItem(BuildContext context, IconData icon, String value, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
-        Icon(icon, color: AppColors.primary, size: 24),
+        Icon(icon, color: colorScheme.primary, size: 24),
         const SizedBox(height: 8),
         Text(
           value,
@@ -68,7 +69,7 @@ class ProfileStatsWidget extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: AppColors.outline,
+            color: colorScheme.onSurfaceVariant,
             fontSize: 9,
             letterSpacing: 1.0,
           ),

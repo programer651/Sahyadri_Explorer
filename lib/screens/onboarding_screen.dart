@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import '../theme.dart';
+import '../app_theme.dart';
 import '../main_scaffold.dart';
 import '../services/auth_service.dart';
 
@@ -37,9 +37,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       return;
     }
 
-    setState(() {
-      _isEmailLoading = true;
-    });
+    setState(() => _isEmailLoading = true);
 
     try {
       if (_isLogin) {
@@ -60,18 +58,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isEmailLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isEmailLoading = false);
     }
   }
 
   Future<void> _handleGoogleSignIn() async {
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final userCredential = await _authService.signInWithGoogle();
@@ -88,16 +80,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -108,7 +99,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             right: 0,
             height: MediaQuery.of(context).size.height * 0.5,
             child: Opacity(
-              opacity: 0.2,
+              opacity: isDark ? 0.1 : 0.2,
               child: Container(
                 decoration: const BoxDecoration(
                   image: DecorationImage(
@@ -120,7 +111,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       0.2126, 0.7152, 0.0722, 0, 0,
                       0.2126, 0.7152, 0.0722, 0, 0,
                       0,      0,      0,      1, 0,
-                    ]), // Grayscale
+                    ]),
                   ),
                 ),
                 foregroundDecoration: BoxDecoration(
@@ -128,8 +119,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                     colors: [
-                      AppColors.background,
-                      AppColors.background.withValues(alpha: 0),
+                      colorScheme.surface,
+                      colorScheme.surface.withValues(alpha: 0),
                     ],
                     stops: const [0.3, 1.0],
                   ),
@@ -143,7 +134,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
               child: Column(
                 children: [
-                  // Header
                   const SizedBox(height: 40),
                   Center(
                     child: Column(
@@ -152,19 +142,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           width: 64,
                           height: 64,
                           decoration: BoxDecoration(
-                            color: AppColors.primaryContainer,
+                            color: colorScheme.primary,
                             borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0x0A1B3022),
+                                color: colorScheme.primary.withValues(alpha: 0.2),
                                 blurRadius: 40,
                                 offset: const Offset(0, 20),
                               ),
                             ],
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Symbols.landscape,
-                            color: AppColors.onPrimaryContainer,
+                            color: colorScheme.onPrimary,
                             size: 32,
                           ),
                         ),
@@ -180,7 +170,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             'Quiet adventures for the mindful explorer.',
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.onSurfaceVariant,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ),
@@ -190,7 +180,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                   const SizedBox(height: 64),
 
-                  // Main Content
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -198,16 +187,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text(
                           'EMAIL ADDRESS',
-                          style: Theme.of(context).textTheme.labelSmall,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _emailController,
+                        style: TextStyle(color: colorScheme.onSurface),
                         decoration: InputDecoration(
                           hintText: 'name@example.com',
                           filled: true,
-                          fillColor: AppColors.surfaceContainerLow,
+                          fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
@@ -220,17 +210,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text(
                           'PASSWORD',
-                          style: Theme.of(context).textTheme.labelSmall,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _passwordController,
                         obscureText: true,
+                        style: TextStyle(color: colorScheme.onSurface),
                         decoration: InputDecoration(
                           hintText: '••••••••',
                           filled: true,
-                          fillColor: AppColors.surfaceContainerLow,
+                          fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
@@ -245,26 +236,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: ElevatedButton(
                           onPressed: _isEmailLoading ? null : _handleEmailAuth,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: AppColors.onPrimary,
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: colorScheme.onPrimary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(999),
                             ),
                             elevation: 0,
                           ),
                           child: _isEmailLoading
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 24,
                                   height: 24,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: AppColors.onPrimary,
+                                    color: colorScheme.onPrimary,
                                   ),
                                 )
                               : Text(
                                   _isLogin ? 'Login with Email' : 'Sign Up with Email',
                                   style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                                    color: AppColors.onPrimary,
+                                    color: colorScheme.onPrimary,
+                                    fontSize: 16,
                                   ),
                                 ),
                         ),
@@ -282,7 +274,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 ? "Don't have an account? Sign up"
                                 : "Already have an account? Login",
                             style: TextStyle(
-                              color: AppColors.primary,
+                              color: colorScheme.primary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -292,15 +284,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       const SizedBox(height: 24),
                       Row(
                         children: [
-                          const Expanded(child: Divider(color: AppColors.outlineVariant)),
+                          Expanded(child: Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 24.0),
                             child: Text(
                               'OR',
-                              style: Theme.of(context).textTheme.labelSmall,
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
                             ),
                           ),
-                          const Expanded(child: Divider(color: AppColors.outlineVariant)),
+                          Expanded(child: Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -311,8 +303,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: OutlinedButton(
                           onPressed: _isLoading ? null : _handleGoogleSignIn,
                           style: OutlinedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            side: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+                            backgroundColor: isDark ? colorScheme.surface : Colors.white,
+                            side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(999),
                             ),
@@ -326,14 +318,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    // Simplified Google Icon using a colored box or SVG would be better
-                                    // For now, just a placeholder
                                     const Icon(Icons.g_mobiledata, color: Colors.blue, size: 32),
                                     const SizedBox(width: 8),
                                     Text(
                                       'Continue with Google',
                                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                         fontWeight: FontWeight.w500,
+                                        color: colorScheme.onSurface,
                                       ),
                                     ),
                                   ],
@@ -345,7 +336,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                   const SizedBox(height: 64),
 
-                  // Feature Cards
                   Row(
                     children: [
                       Expanded(
@@ -370,7 +360,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                   const SizedBox(height: 64),
 
-                  // Footer
                   Text.rich(
                     TextSpan(
                       text: 'By continuing, you agree to our ',
@@ -378,7 +367,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         TextSpan(
                           text: 'Terms of Service',
                           style: TextStyle(
-                            color: AppColors.primary,
+                            color: colorScheme.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -386,7 +375,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         TextSpan(
                           text: 'Privacy Policy',
                           style: TextStyle(
-                            color: AppColors.primary,
+                            color: colorScheme.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -395,23 +384,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       height: 1.5,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
               ),
-            ),
-          ),
-
-          // Page indicators
-          Positioned(
-            top: 16,
-            right: 16,
-            child: Row(
-              children: [
-                _buildIndicator(false),
-                _buildIndicator(false),
-                _buildIndicator(true),
-              ],
             ),
           ),
         ],
@@ -420,42 +397,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildFeatureCard(BuildContext context, IconData icon, String title, String subtitle) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh.withValues(alpha: 0.5),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.1)),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.secondary, size: 24),
+          Icon(icon, color: colorScheme.secondary, size: 24),
           const SizedBox(height: 4),
           Text(
             title,
-            style: Theme.of(context).textTheme.displaySmall,
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 16),
           ),
           const SizedBox(height: 4),
           Text(
             subtitle,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppColors.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildIndicator(bool isActive) {
-    return Container(
-      margin: const EdgeInsets.only(left: 4),
-      width: isActive ? 24 : 8,
-      height: 8,
-      decoration: BoxDecoration(
-        color: isActive ? AppColors.primary : AppColors.primary.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(999),
       ),
     );
   }

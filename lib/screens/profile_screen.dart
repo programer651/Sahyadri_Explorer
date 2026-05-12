@@ -8,7 +8,7 @@ import '../services/user_profile_service.dart';
 import '../widgets/profile_stats_widget.dart';
 import '../widgets/expedition_card_widget.dart';
 import 'trek_history_screen.dart';
-import '../theme.dart';
+import '../app_theme.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -71,6 +71,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = _profileService.currentUser;
     final displayName = user?.displayName ?? 'Explorer';
     final photoUrl = user?.photoURL;
+    final colorScheme = Theme.of(context).colorScheme;
     
     return RefreshIndicator(
       onRefresh: _loadProfileData,
@@ -85,9 +86,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 CircleAvatar(
                   radius: 40,
-                  backgroundColor: AppColors.primaryFixedDim,
+                  backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                   backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-                  child: photoUrl == null ? const Icon(Symbols.person, size: 40, color: Colors.white) : null,
+                  child: photoUrl == null ? Icon(Symbols.person, size: 40, color: colorScheme.primary) : null,
                 ),
                 const SizedBox(width: 20),
                 Expanded(
@@ -95,7 +96,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(displayName, style: Theme.of(context).textTheme.displayLarge),
-                      Text(user?.email ?? 'Join the expedition', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.outline)),
+                      Text(
+                        user?.email ?? 'Join the expedition', 
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                      ),
                     ],
                   ),
                 ),
@@ -109,17 +113,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerHigh,
+                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Symbols.location_on, size: 16, color: AppColors.secondary),
+                    Icon(Symbols.location_on, size: 16, color: colorScheme.secondary),
                     const SizedBox(width: 6),
                     Text(
                       _readableLocation ?? '${_currentPosition!.latitude.toStringAsFixed(2)}, ${_currentPosition!.longitude.toStringAsFixed(2)}',
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.onSurfaceVariant),
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -127,7 +132,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 32),
 
-            // Stats Dashboard (Clickable!)
+            // Stats Dashboard
             ProfileStatsWidget(
               totalDistance: _stats?.totalDistanceKm ?? 0.0,
               totalTreks: _stats?.totalTreks ?? 0,
@@ -162,7 +167,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       );
                     },
-                    child: const Text('View All', style: TextStyle(fontSize: 12, color: AppColors.secondary)),
+                    child: Text('View All', style: TextStyle(fontSize: 12, color: colorScheme.secondary)),
                   ),
               ],
             ),
@@ -193,10 +198,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               )
             else
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
-                  child: Text('Start your first trek to see achievements!'),
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  child: Text(
+                    'Start your first trek to see achievements!',
+                    style: TextStyle(color: colorScheme.onSurfaceVariant),
+                  ),
                 ),
               ),
           ],

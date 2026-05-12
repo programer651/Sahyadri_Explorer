@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../models/expedition_model.dart';
-import '../theme.dart';
+import '../app_theme.dart';
 
 class TrekHistoryScreen extends StatelessWidget {
   final List<Expedition> expeditions;
@@ -12,13 +12,11 @@ class TrekHistoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final completed = expeditions.where((e) => e.isConquered).toList();
     final incomplete = expeditions.where((e) => !e.isConquered).toList();
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Expedition Journal', style: Theme.of(context).textTheme.displaySmall),
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        scrolledUnderElevation: 0,
         centerTitle: true,
       ),
       body: CustomScrollView(
@@ -47,16 +45,16 @@ class TrekHistoryScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Symbols.explore, size: 64, color: AppColors.outlineVariant),
+                    Icon(Symbols.explore, size: 64, color: colorScheme.outlineVariant),
                     const SizedBox(height: 16),
                     Text(
                       'No entries in your journal yet',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.outline),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Start your first trek to see achievements!',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
                     ),
                   ],
                 ),
@@ -69,6 +67,7 @@ class TrekHistoryScreen extends StatelessWidget {
   }
 
   Widget _buildSectionHeader(BuildContext context, String title, int count) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
       sliver: SliverToBoxAdapter(
@@ -79,19 +78,19 @@ class TrekHistoryScreen extends StatelessWidget {
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     letterSpacing: 1.5,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.onSurfaceVariant,
+                    color: colorScheme.onSurfaceVariant,
                   ),
             ),
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: AppColors.primaryFixedDim.withValues(alpha: 0.3),
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 count.toString(),
-                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary),
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.primary),
               ),
             ),
           ],
@@ -108,13 +107,14 @@ class _TrekDetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -139,12 +139,12 @@ class _TrekDetailCard extends StatelessWidget {
                     ),
                     Text(
                       _formatDateTime(expedition.date),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 11),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 11, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
               ),
-              _buildStatusBadge(),
+              _buildStatusBadge(context),
             ],
           ),
           const SizedBox(height: 20),
@@ -161,35 +161,42 @@ class _TrekDetailCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge() {
+  Widget _buildStatusBadge(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isConquered = expedition.isConquered;
+    final bgColor = isConquered ? colorScheme.primary.withValues(alpha: 0.1) : colorScheme.secondary.withValues(alpha: 0.1);
+    final textColor = isConquered ? colorScheme.primary : colorScheme.secondary;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: expedition.isConquered ? AppColors.primaryFixedDim : AppColors.secondaryFixedDim,
+        color: bgColor,
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: textColor.withValues(alpha: 0.2)),
       ),
       child: Text(
-        expedition.isConquered ? 'CONQUERED' : 'PARTIAL',
+        isConquered ? 'CONQUERED' : 'PARTIAL',
         style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.bold,
-          color: expedition.isConquered ? AppColors.onPrimaryFixed : AppColors.onSecondaryFixed,
+          color: textColor,
         ),
       ),
     );
   }
 
   Widget _buildStatInfo(BuildContext context, IconData icon, String value, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(icon, size: 14, color: AppColors.outline),
+            Icon(icon, size: 14, color: colorScheme.onSurfaceVariant),
             const SizedBox(width: 4),
             Text(
               label,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 9, letterSpacing: 0.5),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 9, letterSpacing: 0.5, color: colorScheme.onSurfaceVariant),
             ),
           ],
         ),
@@ -199,7 +206,7 @@ class _TrekDetailCard extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
-                color: AppColors.primary,
+                color: colorScheme.primary,
               ),
         ),
       ],

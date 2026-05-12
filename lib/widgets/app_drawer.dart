@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import '../theme.dart';
+import '../app_theme.dart';
 import '../main_scaffold.dart';
 import '../screens/settings_screen.dart';
 import '../screens/onboarding_screen.dart';
@@ -10,6 +10,7 @@ class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
   Future<void> _handleLogout(BuildContext context) async {
+    final colorScheme = Theme.of(context).colorScheme;
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -19,11 +20,11 @@ class AppDrawer extends StatelessWidget {
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel', style: TextStyle(color: AppColors.outline)),
+              child: Text('Cancel', style: TextStyle(color: colorScheme.onSurfaceVariant)),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Logout', style: TextStyle(color: AppColors.error)),
+              child: Text('Logout', style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.bold)),
             ),
           ],
         );
@@ -31,10 +32,7 @@ class AppDrawer extends StatelessWidget {
     );
 
     if (confirm == true) {
-      // Sign out from Firebase
       await FirebaseAuth.instance.signOut();
-      
-      // Navigate to onboarding screen and remove all previous routes
       if (context.mounted) {
         Navigator.pushAndRemoveUntil(
           context,
@@ -49,8 +47,11 @@ class AppDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final email = user?.email ?? 'Not logged in';
+    final photoUrl = user?.photoURL;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Drawer(
+      backgroundColor: colorScheme.surface,
       child: Column(
         children: [
           // Custom Header
@@ -58,12 +59,12 @@ class AppDrawer extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.only(top: 64, bottom: 24, left: 24, right: 24),
             decoration: BoxDecoration(
-              color: AppColors.primaryContainer,
+              color: colorScheme.primary,
               image: DecorationImage(
                 image: const NetworkImage('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=1000'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
-                  AppColors.primaryContainer.withValues(alpha: 0.8),
+                  colorScheme.primary.withValues(alpha: 0.8),
                   BlendMode.darken,
                 ),
               ),
@@ -71,27 +72,21 @@ class AppDrawer extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                    image: const DecorationImage(
-                      image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuC5bzyJvs1dPbbDGhnGMc8kehdF_lk8bt8PikfStYWkwP4hkilIgY5ahnnc8iZrvonFh1ra3O5VXrKmUTV_LXQ0MO2nWpno1gs87lraETkG6n5gW6oeRXFFr1yD9GfZO3Hffg5cSA6_NtR9WDL3oss8WpLiVtAL4HqLE94TFUMETAgZ1-APnTxlJZ0s0JwA0hjK6jNZyq1oH8rc0ldCk1dTP43UuCkvB7oOvTLyDjowT87qwjJkAJxdT8wDKaOJrb-C2X3mtTokLcA'),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+                CircleAvatar(
+                  radius: 32,
+                  backgroundColor: Colors.white24,
+                  backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
+                  child: photoUrl == null ? const Icon(Symbols.person, color: Colors.white, size: 32) : null,
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Sahyadri Explorer',
-                  style: Theme.of(context).textTheme.displaySmall?.copyWith(color: Colors.white),
+                  user?.displayName ?? 'Sahyadri Explorer',
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(color: Colors.white, fontSize: 18),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   email,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70, fontSize: 13),
                 ),
               ],
             ),
@@ -102,79 +97,58 @@ class AppDrawer extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
-                ListTile(
-                  leading: const Icon(Symbols.home, color: AppColors.primary),
-                  title: const Text('Home'),
-                  onTap: () {
-                    Navigator.pop(context); // Close drawer
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const MainScaffold()),
-                    );
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Symbols.map, color: AppColors.primary),
-                  title: const Text('Map View'),
-                  onTap: () {
-                    Navigator.pop(context); // Close drawer
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const MainScaffold()),
-                    );
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Symbols.favorite, color: AppColors.outline),
-                  title: const Text('Favorites'),
-                  trailing: const Text('Coming Soon', style: TextStyle(fontSize: 10, color: AppColors.outline)),
-                  onTap: () {
-                    Navigator.pop(context); // Just close for now
-                  },
-                ),
-                const Divider(height: 32),
-                ListTile(
-                  leading: const Icon(Symbols.settings, color: AppColors.onSurfaceVariant),
-                  title: const Text('Settings'),
-                  onTap: () {
-                    Navigator.pop(context); // Close drawer
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                    );
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Symbols.info, color: AppColors.onSurfaceVariant),
-                  title: const Text('About'),
-                  onTap: () {
-                    Navigator.pop(context); // Close drawer
-                    showDialog(
-                      context: context,
-                      builder: (context) => const AlertDialog(
-                        title: Text('About Sahyadri Explorer'),
-                        content: Text('Your companion for discovering the majestic forts and trails of the Western Ghats.\n\nVersion 1.0.0'),
-                      ),
-                    );
-                  },
-                ),
+                _buildDrawerTile(context, Symbols.home, 'Home', () {
+                  Navigator.pop(context);
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainScaffold()));
+                }),
+                _buildDrawerTile(context, Symbols.map, 'Map View', () {
+                  Navigator.pop(context);
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainScaffold()));
+                }),
+                _buildDrawerTile(context, Symbols.favorite, 'Favorites', () {
+                  Navigator.pop(context);
+                }, trailing: 'Coming Soon'),
+                const Divider(height: 32, indent: 24, endIndent: 24),
+                _buildDrawerTile(context, Symbols.settings, 'Settings', () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+                }),
+                _buildDrawerTile(context, Symbols.info, 'About', () {
+                  Navigator.pop(context);
+                  showDialog(
+                    context: context,
+                    builder: (context) => const AlertDialog(
+                      title: Text('About Sahyadri Explorer'),
+                      content: Text('Your companion for discovering the majestic forts and trails of the Western Ghats.\n\nVersion 1.0.0'),
+                    ),
+                  );
+                }),
               ],
             ),
           ),
 
-          // Logout Item at bottom
+          // Logout Item
           const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: ListTile(
-              leading: const Icon(Symbols.logout, color: AppColors.error),
-              title: const Text('Logout', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
-              onTap: () => _handleLogout(context),
-            ),
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            leading: Icon(Symbols.logout, color: colorScheme.error),
+            title: Text('Logout', style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.bold)),
+            onTap: () => _handleLogout(context),
           ),
           const SizedBox(height: 16),
         ],
       ),
+    );
+  }
+
+  Widget _buildDrawerTile(BuildContext context, IconData icon, String title, VoidCallback onTap, {String? trailing}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+      leading: Icon(icon, color: colorScheme.primary),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+      trailing: trailing != null ? Text(trailing, style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant)) : null,
+      onTap: onTap,
     );
   }
 }

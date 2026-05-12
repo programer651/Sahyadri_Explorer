@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../models/expedition_model.dart';
 import '../models/fort_model.dart';
-import '../theme.dart';
+import '../app_theme.dart';
 
 enum ExpeditionCardType { recent, suggested }
 
@@ -25,6 +25,7 @@ class ExpeditionCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final title = type == ExpeditionCardType.recent ? expedition!.fortName : fort!.name;
     final subtitle = type == ExpeditionCardType.recent 
         ? '${expedition!.distanceKm.toStringAsFixed(1)} km • ${expedition!.completionPercentage >= 0.9 ? 'Conquered' : 'Abandoned'}'
@@ -38,9 +39,9 @@ class ExpeditionCardWidget extends StatelessWidget {
       width: 280,
       margin: const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -60,8 +61,8 @@ class ExpeditionCardWidget extends StatelessWidget {
               borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               gradient: LinearGradient(
                 colors: type == ExpeditionCardType.recent 
-                  ? [AppColors.primary, AppColors.primaryFixed]
-                  : [AppColors.secondary, AppColors.secondaryFixed],
+                  ? [colorScheme.primary, AppColors.primaryFixedDim]
+                  : [colorScheme.secondary, AppColors.secondaryFixedDim],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -92,22 +93,22 @@ class ExpeditionCardWidget extends StatelessWidget {
                     ),
                     Text(
                       dateOrTime,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.outline, fontSize: 9),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.outline, fontSize: 12),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 12),
                 ),
                 if (type == ExpeditionCardType.suggested) ...[
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      _buildTag(fort!.difficulty.toUpperCase()),
+                      _buildTag(context, fort!.difficulty.toUpperCase()),
                       const SizedBox(width: 8),
-                      _buildTag('NEARBY'),
+                      _buildTag(context, 'NEARBY'),
                     ],
                   ),
                 ],
@@ -127,16 +128,17 @@ class ExpeditionCardWidget extends StatelessWidget {
     return '${diff.inDays} DAYS AGO';
   }
 
-  Widget _buildTag(String text) {
+  Widget _buildTag(BuildContext context, String text) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh,
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.onSurfaceVariant),
+        style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
       ),
     );
   }

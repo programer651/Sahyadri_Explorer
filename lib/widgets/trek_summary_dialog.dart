@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../models/trek_session_model.dart';
 import '../state/navigation_state_manager.dart';
-import '../theme.dart';
 
 class TrekSummaryDialog extends StatelessWidget {
   final TrekSession session;
@@ -25,6 +24,7 @@ class TrekSummaryDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       color: Colors.black.withValues(alpha: 0.8),
       child: Center(
@@ -32,7 +32,7 @@ class TrekSummaryDialog extends StatelessWidget {
           margin: const EdgeInsets.all(24),
           padding: const EdgeInsets.all(32),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(32),
             boxShadow: [
               BoxShadow(
@@ -47,7 +47,7 @@ class TrekSummaryDialog extends StatelessWidget {
               Icon(
                 isVictory ? Symbols.workspace_premium : Symbols.flag,
                 size: 80,
-                color: isVictory ? AppColors.secondary : AppColors.outline,
+                color: isVictory ? colorScheme.secondary : colorScheme.onSurfaceVariant,
               ),
               const SizedBox(height: 24),
               Text(
@@ -55,7 +55,7 @@ class TrekSummaryDialog extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: isVictory ? AppColors.secondary : AppColors.onSurface,
+                  color: isVictory ? colorScheme.secondary : colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
@@ -68,15 +68,15 @@ class TrekSummaryDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerLow,
+                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildMiniStat('Completion', '${(completionPercentage * 100).toInt()}%'),
-                    _buildMiniStat('Distance', '${session.distanceCoveredKm.toStringAsFixed(2)} km'),
-                    _buildMiniStat('Time', _formatDuration(session.timeElapsed)),
+                    _buildMiniStat(context, 'Completion', '${(completionPercentage * 100).toInt()}%'),
+                    _buildMiniStat(context, 'Distance', '${session.distanceCoveredKm.toStringAsFixed(2)} km'),
+                    _buildMiniStat(context, 'Time', _formatDuration(session.timeElapsed)),
                   ],
                 ),
               ),
@@ -90,8 +90,8 @@ class TrekSummaryDialog extends StatelessWidget {
                   icon: const Icon(Symbols.person),
                   label: const Text('View Profile'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
@@ -107,7 +107,7 @@ class TrekSummaryDialog extends StatelessWidget {
                   icon: const Icon(Symbols.explore),
                   label: const Text('Return to Map'),
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.outline,
+                    foregroundColor: colorScheme.onSurfaceVariant,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
@@ -120,17 +120,18 @@ class TrekSummaryDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildMiniStat(String label, String value) {
+  Widget _buildMiniStat(BuildContext context, String label, String value) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         Text(
           value,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.onSurface),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: colorScheme.onSurface),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(color: AppColors.outline, fontSize: 11),
+          style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 11),
         ),
       ],
     );
