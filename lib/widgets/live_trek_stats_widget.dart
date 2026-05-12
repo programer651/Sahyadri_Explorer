@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/trek_session_model.dart';
-import '../theme.dart';
 
 class LiveTrekStatsWidget extends StatelessWidget {
   final TrekSession session;
@@ -21,12 +20,14 @@ class LiveTrekStatsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.95),
+        color: colorScheme.surface.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1), 
@@ -45,11 +46,11 @@ class LiveTrekStatsWidget extends StatelessWidget {
             children: [
               Text(
                 'Trek Progress',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.outline, fontSize: 11),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 11),
               ),
               Text(
                 '${(completionPercentage * 100).toInt()}%',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: colorScheme.primary),
               ),
             ],
           ),
@@ -59,8 +60,8 @@ class LiveTrekStatsWidget extends StatelessWidget {
             child: LinearProgressIndicator(
               value: completionPercentage,
               minHeight: 8,
-              backgroundColor: AppColors.primaryFixedDim.withValues(alpha: 0.3),
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+              backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
             ),
           ),
           const SizedBox(height: 12),
@@ -69,15 +70,15 @@ class LiveTrekStatsWidget extends StatelessWidget {
             children: [
               Text(
                 '${session.distanceCoveredKm.toStringAsFixed(2)} KM',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.onSurface),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: colorScheme.onSurface),
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Text('•', style: TextStyle(color: AppColors.outline, fontWeight: FontWeight.bold)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text('•', style: TextStyle(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.bold)),
               ),
               Text(
                 _formatDuration(session.timeElapsed),
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.onSurface),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: colorScheme.onSurface),
               ),
             ],
           )

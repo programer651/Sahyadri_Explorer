@@ -1,188 +1,251 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import '../theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/theme_manager.dart';
+import '../services/notification_settings_service.dart';
+import '../services/user_profile_service.dart';
+import '../widgets/password_change_dialog.dart';
 import 'onboarding_screen.dart';
-import '../widgets/app_drawer.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
   @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  final _themeManager = ThemeManager();
+  final _notifService = NotificationSettingsService();
+  final _profileService = UserProfileService();
+
+  bool _notificationsEnabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifSettings();
+  }
+
+  Future<void> _loadNotifSettings() async {
+    final enabled = await _notifService.areNotificationsEnabled();
+    setState(() => _notificationsEnabled = enabled);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    final email = user?.email ?? 'Not logged in';
+    final user = _profileService.currentUser;
+    final isGoogleUser =
+        user?.providerData.any((p) => p.providerId == 'google.com') ?? false;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      drawer: const AppDrawer(),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Symbols.menu, color: AppColors.onSurface),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
         title: Text(
           'Settings',
-          style: Theme.of(
-            context,
-          ).textTheme.displaySmall?.copyWith(color: AppColors.onSurface),
+          style: Theme.of(context).textTheme.displaySmall,
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            color: AppColors.outlineVariant.withValues(alpha: 0.3),
-            height: 1.0,
-          ),
-        ),
+        centerTitle: true,
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 24),
-        children: [
-          // Profile Section
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 8.0,
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.primaryContainer,
-                    image: const DecorationImage(
-                      image: NetworkImage(
-                        'https://lh3.googleusercontent.com/aida-public/AB6AXuC5bzyJvs1dPbbDGhnGMc8kehdF_lk8bt8PikfStYWkwP4hkilIgY5ahnnc8iZrvonFh1ra3O5VXrKmUTV_LXQ0MO2nWpno1gs87lraETkG6n5gW6oeRXFFr1yD9GfZO3Hffg5cSA6_NtR9WDL3oss8WpLiVtAL4HqLE94TFUMETAgZ1-APnTxlJZ0s0JwA0hjK6jNZyq1oH8rc0ldCk1dTP43UuCkvB7oOvTLyDjowT87qwjJkAJxdT8wDKaOJrb-C2X3mtTokLcA',
-                      ),
-                      fit: BoxFit.cover,
-                    ),
+      body: ListenableBuilder(
+        listenable: _themeManager,
+        builder: (context, _) {
+          return ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            children: [
+              // User Identity Header
+              _buildUserHeader(user),
+              const SizedBox(height: 40),
+
+              _buildSectionHeader('PREFERENCES'),
+              _buildSettingTile(
+                icon: Symbols.dark_mode,
+                title: 'Dark Mode',
+                trailing: Switch(
+                  value: _themeManager.isDarkMode,
+                  onChanged: (v) => _themeManager.toggleTheme(v),
+                  activeColor: colorScheme.secondary,
+                ),
+              ),
+
+              const SizedBox(height: 32),
+              _buildSectionHeader('NOTIFICATIONS'),
+              _buildSettingTile(
+                icon: Symbols.notifications,
+                title: 'Enable Notifications',
+                trailing: Switch(
+                  value: _notificationsEnabled,
+                  onChanged: (v) {
+                    setState(() => _notificationsEnabled = v);
+                    _notifService.setNotificationsEnabled(v);
+                  },
+                  activeColor: colorScheme.secondary,
+                ),
+              ),
+
+              const SizedBox(height: 32),
+              _buildSectionHeader('ACCOUNT'),
+              if (isGoogleUser)
+                _buildSettingTile(
+                  icon: Symbols.lock,
+                  title: 'Change Password',
+                  onTap: () => showDialog(
+                    context: context,
+                    builder: (context) => const PasswordChangeDialog(),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Explorer Profile',
-                        style: Theme.of(context).textTheme.displaySmall,
+
+              // if (isGoogleUser)
+              //   _buildSettingTile(
+              //     icon: Symbols.account_circle,
+              //     title: 'Google Account Linked',
+              //     subtitle: 'Password managed by Google',
+              //   ),
+              _buildSettingTile(
+                icon: Symbols.logout,
+                title: 'Logout',
+                onTap: () async {
+                  await FirebaseAuth.instance.signOut();
+                  if (mounted) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const OnboardingScreen(),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        email,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.outline,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                      (route) => false,
+                    );
+                  }
+                },
+                titleColor: colorScheme.error,
+              ),
+              const SizedBox(height: 100),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildUserHeader(User? user) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 36,
+            backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+            backgroundImage: user?.photoURL != null
+                ? NetworkImage(user!.photoURL!)
+                : null,
+            child: user?.photoURL == null
+                ? Icon(Symbols.person, size: 36, color: colorScheme.primary)
+                : null,
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user?.displayName ?? 'Explorer',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.displaySmall?.copyWith(fontSize: 18),
+                ),
+                Text(
+                  user?.email ?? 'Anonymous',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: 13,
                   ),
                 ),
               ],
             ),
           ),
-
-          const SizedBox(height: 24),
-          const Divider(),
-
-          // Account Section
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-            child: Text(
-              'ACCOUNT',
-              style: Theme.of(
-                context,
-              ).textTheme.labelSmall?.copyWith(color: AppColors.primary),
-            ),
-          ),
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-            leading: const Icon(
-              Symbols.mail,
-              color: AppColors.onSurfaceVariant,
-            ),
-            title: const Text('Email Address'),
-            subtitle: Text(email),
-          ),
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-            leading: const Icon(
-              Symbols.lock,
-              color: AppColors.onSurfaceVariant,
-            ),
-            title: const Text('Change Password'),
-            trailing: const Icon(
-              Symbols.chevron_right,
-              color: AppColors.outline,
-            ),
-            onTap: () {}, // Placeholder
-          ),
-
-          const Divider(),
-
-          // App Settings Section
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-            child: Text(
-              'APP',
-              style: Theme.of(
-                context,
-              ).textTheme.labelSmall?.copyWith(color: AppColors.primary),
-            ),
-          ),
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-            leading: const Icon(
-              Symbols.dark_mode,
-              color: AppColors.onSurfaceVariant,
-            ),
-            title: const Text('Dark Mode'),
-            trailing: Switch(
-              value: false,
-              onChanged: (val) {}, // Placeholder
-              activeThumbColor: AppColors.primary,
-            ),
-          ),
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-            leading: const Icon(
-              Symbols.notifications,
-              color: AppColors.onSurfaceVariant,
-            ),
-            title: const Text('Notifications'),
-            trailing: Switch(
-              value: true,
-              onChanged: (val) {}, // Placeholder
-              activeThumbColor: AppColors.primary,
-            ),
-          ),
-
-          const Divider(),
-
-          // About Section
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-            child: Text(
-              'ABOUT',
-              style: Theme.of(
-                context,
-              ).textTheme.labelSmall?.copyWith(color: AppColors.primary),
-            ),
-          ),
-          const ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: 24),
-            leading: Icon(Symbols.info, color: AppColors.onSurfaceVariant),
-            title: Text('App Version'),
-            subtitle: Text('1.0.0 (Build 42)'),
-          ),
-
-          const SizedBox(height: 40),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 16),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          letterSpacing: 1.5,
+          fontWeight: FontWeight.bold,
+          color: Theme.of(
+            context,
+          ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingTile({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    Widget? trailing,
+    VoidCallback? onTap,
+    Color? titleColor,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.2),
+        ),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+        leading: Icon(icon, color: titleColor ?? colorScheme.primary),
+        title: Text(
+          title,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: titleColor,
+          ),
+        ),
+        subtitle: subtitle != null
+            ? Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              )
+            : null,
+        trailing:
+            trailing ??
+            (onTap != null
+                ? Icon(
+                    Symbols.chevron_right,
+                    size: 20,
+                    color: colorScheme.onSurfaceVariant,
+                  )
+                : null),
+        onTap: onTap,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     );
   }

@@ -6,8 +6,7 @@ import '../models/fort_model.dart';
 import '../state/trek_state_manager.dart';
 import '../widgets/live_trek_stats_widget.dart';
 import '../widgets/trek_summary_dialog.dart';
-import '../theme.dart';
-// Note: You can still swap between MockGpsTrackingService and GeolocatorTrackingService in TrekStateManager!
+import '../app_theme.dart';
 import '../services/gps_tracking_service.dart';
 
 class LiveTrackingScreen extends StatefulWidget {
@@ -29,7 +28,6 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
   @override
   void initState() {
     super.initState();
-    // Real production GPS tracking. 
     _stateManager = TrekStateManager(trackingService: GeolocatorTrackingService());
     
     _pulseController = AnimationController(
@@ -55,13 +53,13 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(_stateManager.errorMessage!),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
-      _stateManager.errorMessage = null; // Clear it so it doesn't spam
+      _stateManager.errorMessage = null;
     }
     
-    setState(() {}); // Rebuild UI
+    setState(() {});
   }
 
   @override
@@ -80,21 +78,21 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
   }
 
   Widget _buildApproachBanner() {
+    final colorScheme = Theme.of(context).colorScheme;
     final distKm = (_stateManager.distanceToFortMeters / 1000).toStringAsFixed(2);
     final isReady = _stateManager.isReady;
 
     return Container(
-      color: Colors.black.withValues(alpha: 0.4),
+      color: Colors.black.withValues(alpha: 0.6),
       child: Center(
         child: Container(
           margin: const EdgeInsets.all(24),
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 20)
-            ]
+            border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 20)],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -102,25 +100,25 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
               Icon(
                 isReady ? Symbols.verified : Symbols.directions_walk,
                 size: 48,
-                color: isReady ? AppColors.secondary : AppColors.primary,
+                color: isReady ? colorScheme.secondary : colorScheme.primary,
               ),
               const SizedBox(height: 16),
               Text(
                 _stateManager.session!.activeFort.name,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.displaySmall,
               ),
               const SizedBox(height: 8),
               if (!isReady)
                 Text(
                   'Distance to Fort Region: $distKm km\nGet within 1km to start trekking.',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.grey, height: 1.5),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
                 ),
               if (isReady)
-                const Text(
+                Text(
                   'You have arrived at the base!\nReady to begin the ascent?',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500, height: 1.5),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
               const SizedBox(height: 24),
               SizedBox(
@@ -130,10 +128,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
                   icon: const Icon(Symbols.explore),
                   label: const Text('Start Trek', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: Colors.grey.shade300,
-                    disabledForegroundColor: Colors.grey.shade500,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
+                    disabledBackgroundColor: colorScheme.outlineVariant,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
@@ -149,16 +146,17 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
   @override
   Widget build(BuildContext context) {
     if (widget.activeFort == null || _stateManager.session == null) {
-      return const Center(child: Text('No Active Trek.'));
+      return Center(child: Text('No Active Trek.', style: Theme.of(context).textTheme.bodyLarge));
     }
 
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final session = _stateManager.session!;
     final currentLocation = _stateManager.currentLocation;
 
     return Scaffold(
       body: Stack(
         children: [
-          // FlutterMap
           GestureDetector(
             onTap: _toggleFocusMode,
             child: FlutterMap(
@@ -166,15 +164,24 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
               options: MapOptions(
                 initialCenter: session.activeFort.location,
                 initialZoom: 15.0,
-                interactionOptions: const InteractionOptions(
-                  flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
-                ),
+                interactionOptions: const InteractionOptions(flags: InteractiveFlag.all & ~InteractiveFlag.rotate),
               ),
               children: [
                 TileLayer(
                   urlTemplate: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
                   subdomains: const ['a', 'b', 'c'],
                   userAgentPackageName: 'com.example.sahyadri_explorer',
+                  tileBuilder: isDark ? (context, tileWidget, tile) {
+                    return ColorFiltered(
+                      colorFilter: const ColorFilter.matrix([
+                        -1.0, 0.0, 0.0, 0.0, 255.0,
+                        0.0, -1.0, 0.0, 0.0, 255.0,
+                        0.0, 0.0, -1.0, 0.0, 255.0,
+                        0.0, 0.0, 0.0, 1.0, 0.0,
+                      ]),
+                      child: tileWidget,
+                    );
+                  } : null,
                 ),
                 
                 MarkerLayer(
@@ -193,7 +200,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
                     polylines: [
                       Polyline(
                         points: session.routePoints,
-                        color: const Color(0xFFF97316),
+                        color: colorScheme.secondary,
                         strokeWidth: 6.0,
                       ),
                     ],
@@ -240,7 +247,6 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
             ),
           ),
 
-          // Top Progress Bar & Stats
           if (_stateManager.isTrekking || _stateManager.isPaused)
             AnimatedPositioned(
               duration: const Duration(milliseconds: 300),
@@ -255,11 +261,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
               ),
             ),
 
-          // Approach Banner
           if (_stateManager.isApproaching || _stateManager.isReady)
             _buildApproachBanner(),
 
-          // Bottom Controls
           if (_stateManager.isTrekking || _stateManager.isPaused)
             AnimatedPositioned(
               duration: const Duration(milliseconds: 300),
@@ -273,22 +277,22 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
                     FloatingActionButton.large(
                       heroTag: 'pause',
                       onPressed: () => _stateManager.pauseTrek(),
-                      backgroundColor: Colors.white,
-                      child: const Icon(Symbols.pause, color: AppColors.primary, size: 36),
+                      backgroundColor: colorScheme.surface,
+                      child: Icon(Symbols.pause, color: colorScheme.primary, size: 36),
                     ),
                   if (_stateManager.isPaused)
                     FloatingActionButton.large(
                       heroTag: 'resume',
                       onPressed: () => _stateManager.resumeTrek(),
-                      backgroundColor: AppColors.primary,
-                      child: const Icon(Symbols.play_arrow, color: Colors.white, size: 36),
+                      backgroundColor: colorScheme.primary,
+                      child: Icon(Symbols.play_arrow, color: colorScheme.onPrimary, size: 36),
                     ),
                   const SizedBox(width: 32),
                   FloatingActionButton.extended(
                     heroTag: 'end',
                     onPressed: () => _stateManager.endTrek(),
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
+                    backgroundColor: colorScheme.error,
+                    foregroundColor: colorScheme.onError,
                     icon: const Icon(Symbols.stop),
                     label: const Text('Abandon', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
@@ -296,7 +300,6 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
               ),
             ),
             
-          // Victory / Defeat Overlay (TrekSummaryDialog)
           if (_stateManager.isCompleted || _stateManager.isAbandoned)
             TrekSummaryDialog(
               session: session, 
