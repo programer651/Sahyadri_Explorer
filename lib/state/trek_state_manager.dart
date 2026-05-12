@@ -158,10 +158,24 @@ class TrekStateManager extends ChangeNotifier {
     
     if (completionPercentage >= 0.90 || isVictoryCheck) {
       _state = TrekState.completed;
-      await _storageService.saveTrek(_session!.distanceCoveredKm, true, _session!.activeFort.name);
+      await _storageService.saveTrek(
+        _session!.distanceCoveredKm, 
+        true, 
+        _session!.activeFort.id,
+        _session!.activeFort.name,
+        completionPercentage,
+        _session!.timeElapsed,
+      );
     } else {
       _state = TrekState.abandoned;
-      await _storageService.saveTrek(_session!.distanceCoveredKm, false, _session!.activeFort.name);
+      await _storageService.saveTrek(
+        _session!.distanceCoveredKm, 
+        false, 
+        _session!.activeFort.id,
+        _session!.activeFort.name,
+        completionPercentage,
+        _session!.timeElapsed,
+      );
     }
     
     notifyListeners();

@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import '../models/fort_model.dart';
 import '../services/conquest_storage_service.dart';
+import '../services/user_profile_service.dart';
+import '../widgets/profile_stats_widget.dart';
+import '../widgets/expedition_card_widget.dart';
+import 'trek_history_screen.dart';
 import '../theme.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -12,368 +19,188 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final ConquestStorageService _storageService = ConquestStorageService();
+  final UserProfileService _profileService = UserProfileService();
+  
   ConquestStats? _stats;
+  Position? _currentPosition;
+  String? _readableLocation;
+  List<Fort> _nearbySuggestions = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadStats();
+    _loadProfileData();
   }
 
-  Future<void> _loadStats() async {
+  Future<void> _loadProfileData() async {
+    setState(() => _isLoading = true);
+    
     final stats = await _storageService.getStats();
-    setState(() {
-      _stats = stats;
-    });
+    final position = await _profileService.getCurrentLocation();
+    
+    String? locationName;
+    if (position != null) {
+      locationName = await _profileService.getReadableLocation(position);
+    }
+
+    List<Fort> suggestions = [];
+    if (stats.expeditions.isEmpty && position != null) {
+      suggestions = await _profileService.getNearbyFortSuggestions(
+        LatLng(position.latitude, position.longitude),
+      );
+    }
+
+    if (mounted) {
+      setState(() {
+        _stats = stats;
+        _currentPosition = position;
+        _readableLocation = locationName;
+        _nearbySuggestions = suggestions;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // If stats aren't loaded yet, show empty or loading
-    final totalDistance = _stats?.totalDistanceKm.toString() ?? '0';
-    final totalConquered = _stats?.conqueredFortIds.length.toString() ?? '0';
-    final totalTreks = _stats?.totalTreks.toString() ?? '0';
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Profile Hero
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Stack(
-                children: [
-                  Container(
-                    width: 128,
-                    height: 128,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 24,
-                        ),
-                      ],
-                      image: const DecorationImage(
-                        image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuAShccApXRtrFGvAUyNKjB9wiTSdkVACJYU4CSv8BxeQoZe9CN2jjWKulCg8QFhkWUnukrGgg-HOpb8tQj3FfMky04TqnkZIe02-N70PI_lmfFYnTuFK7FJ3nsiQm3wHVD8HHfPh8sjydQ2v7mle69hWnvTmcDtLQ7kN2qrlWtl0QvAznQDMLPWbgksPYPJsDB9vXO-xgB7jkAPEVxQNHoYKqX-xmXurK1yPVdJULlXcjJnRfiIu7EW_Cg4cI0ycQ0j7sx_EsI8cHs'),
-                        fit: BoxFit.cover,
-                      ),
-                      border: Border.all(color: Colors.white, width: 4),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: -8,
-                    right: -8,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.background, width: 4),
-                      ),
-                      child: const Icon(Symbols.verified, color: Colors.white, size: 14, fill: 1),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Aditya Kulkarni', style: Theme.of(context).textTheme.displayLarge),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryFixed,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            'LEVEL 12 EXPLORER',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.onPrimaryFixed),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(Symbols.location_on, size: 16, color: AppColors.outline),
-                        const SizedBox(width: 4),
-                        Text('Pune, MH', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.outline, fontSize: 14)),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 40),
-
-          // Stats Grid (Dynamic Data!)
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.05)),
-            ),
-            child: Column(
+    final user = _profileService.currentUser;
+    final displayName = user?.displayName ?? 'Explorer';
+    final photoUrl = user?.photoURL;
+    
+    return RefreshIndicator(
+      onRefresh: _loadProfileData,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Profile Header
+            Row(
               children: [
-                _buildStatRow(context, Symbols.route, 'TOTAL DISTANCE', totalDistance, 'km', AppColors.primaryFixedDim.withValues(alpha: 0.2), AppColors.primary),
-                const Divider(height: 1, color: Color(0x0D061B0E)),
-                _buildStatRow(context, Symbols.fort, 'FORTS CONQUERED', totalConquered, '', AppColors.secondaryFixed.withValues(alpha: 0.2), AppColors.secondary),
-                const Divider(height: 1, color: Color(0x0D061B0E)),
-                _buildStatRow(context, Symbols.landscape, 'TOTAL TREKS', totalTreks, '', AppColors.tertiaryFixed.withValues(alpha: 0.3), AppColors.tertiary),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 40),
-
-          // Achievement Badges
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Achievement Badges', style: Theme.of(context).textTheme.displayMedium),
-                    Text('Your milestones in the Western Ghats', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.outline)),
-                  ],
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: AppColors.primaryFixedDim,
+                  backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
+                  child: photoUrl == null ? const Icon(Symbols.person, size: 40, color: Colors.white) : null,
                 ),
-              ),
-              TextButton.icon(
-                onPressed: () {},
-                icon: const Text('View All'),
-                label: const Icon(Symbols.arrow_forward, size: 16),
-                style: TextButton.styleFrom(foregroundColor: AppColors.secondary),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildBadge(context, Symbols.mountain_flag, 'Peak Performer', AppColors.primary, AppColors.primaryFixed),
-                _buildBadge(context, Symbols.explore, 'Fort Finder', AppColors.secondary, AppColors.secondaryFixed),
-                _buildBadge(context, Symbols.waterfall_chart, 'Waterfall Wiz', AppColors.tertiary, AppColors.tertiaryFixed),
-                _buildBadge(context, Symbols.star, 'Cloud Chaser', AppColors.outline, AppColors.outlineVariant, isLocked: true),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 40),
-
-          // Recent Expedition
-          Text('Recent Expedition', style: Theme.of(context).textTheme.displaySmall),
-          const SizedBox(height: 16),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.05)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.02),
-                  blurRadius: 10,
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                  child: Stack(
-                    children: [
-                      Image.network(
-                        'https://lh3.googleusercontent.com/aida-public/AB6AXuCKQQ55mG27sesTEo4tTg4i0hsqdEcTjzJLh20hzHrBV_qRu_j_n8rnS6I2FaPgwZp1tKLiG_CkyTRU5yGfq3EW0oZfqYU6d9lka_qeeqFKYM-Alj7EVo9UBI5AQbWzueBjpRmseZfHD7SuQHI5LVN6W10x8LALxAgsJxa_BWaaHZaBRk_RFH5-zXGF26aRM7iKIExpP8hpwcXr3w6nev0u0g1zmpzufG6wX22tzuvni078wUr4TD7Q7xsYta1ydg574ZE12RBV-nc',
-                        height: 192,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      ),
-                      Positioned(
-                        top: 16,
-                        right: 16,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            '2 DAYS AGO',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.primary, fontSize: 10),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(24),
+                const SizedBox(width: 20),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Torna Fort Expedition', style: Theme.of(context).textTheme.displaySmall),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Difficult • 12.4 km total • 840m Elevation',
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.outline, fontSize: 14),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppColors.secondaryFixed,
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              'CONQUERED',
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.onSecondaryFixed, fontSize: 10),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      Wrap(
-                        spacing: 8,
-                        children: [
-                          _buildTag('STEEP CLIMB'),
-                          _buildTag('WATERFALL TRAIL'),
-                          _buildTag('PHOTOGRAPHY'),
-                        ],
-                      ),
+                      Text(displayName, style: Theme.of(context).textTheme.displayLarge),
+                      Text(user?.email ?? 'Join the expedition', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.outline)),
                     ],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
+            
+            const SizedBox(height: 16),
 
-  Widget _buildStatRow(BuildContext context, IconData icon, String label, String value, String unit, Color iconBg, Color iconColor) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: iconColor),
-          ),
-          const SizedBox(width: 24),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: Theme.of(context).textTheme.labelSmall?.copyWith(letterSpacing: 1.5)),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
+            // Location Chip
+            if (_currentPosition != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(value, style: Theme.of(context).textTheme.displaySmall),
-                    if (unit.isNotEmpty) ...[
-                      const SizedBox(width: 4),
-                      Text(unit, style: Theme.of(context).textTheme.bodyMedium),
-                    ],
+                    const Icon(Symbols.location_on, size: 16, color: AppColors.secondary),
+                    const SizedBox(width: 6),
+                    Text(
+                      _readableLocation ?? '${_currentPosition!.latitude.toStringAsFixed(2)}, ${_currentPosition!.longitude.toStringAsFixed(2)}',
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.onSurfaceVariant),
+                    ),
                   ],
                 ),
+              ),
+
+            const SizedBox(height: 32),
+
+            // Stats Dashboard (Clickable!)
+            ProfileStatsWidget(
+              totalDistance: _stats?.totalDistanceKm ?? 0.0,
+              totalTreks: _stats?.totalTreks ?? 0,
+              fortsConquered: _stats?.conqueredFortIds.length ?? 0,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TrekHistoryScreen(expeditions: _stats?.expeditions ?? []),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 40),
+
+            // Expeditions or Suggestions
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _stats!.expeditions.isNotEmpty ? 'Recent Expeditions' : 'Suggested for You',
+                  style: Theme.of(context).textTheme.displaySmall,
+                ),
+                if (_stats!.expeditions.isNotEmpty)
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TrekHistoryScreen(expeditions: _stats?.expeditions ?? []),
+                        ),
+                      );
+                    },
+                    child: const Text('View All', style: TextStyle(fontSize: 12, color: AppColors.secondary)),
+                  ),
               ],
             ),
-          ),
-          const Icon(Symbols.chevron_right, color: Color(0x80737973), size: 20),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBadge(BuildContext context, IconData icon, String title, Color iconColor, Color borderColor, {bool isLocked = false}) {
-    return Container(
-      width: 96,
-      margin: const EdgeInsets.only(right: 24),
-      child: Column(
-        children: [
-          Opacity(
-            opacity: isLocked ? 0.4 : 1.0,
-            child: Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Colors.white, Color(0xFFF7F9F7)],
+            const SizedBox(height: 16),
+            
+            if (_stats!.expeditions.isNotEmpty)
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: _stats!.expeditions.map((e) => ExpeditionCardWidget.recent(expedition: e)).toList(),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-                border: Border.all(color: Colors.white),
-              ),
-              child: Center(
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: borderColor, style: BorderStyle.solid),
-                  ),
-                  child: Icon(icon, color: iconColor, size: 36, fill: isLocked ? 0 : 1),
+              )
+            else if (_nearbySuggestions.isNotEmpty)
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: _nearbySuggestions.map((f) {
+                    double dist = 0;
+                    if (_currentPosition != null) {
+                      dist = const Distance().as(
+                        LengthUnit.Meter, 
+                        LatLng(_currentPosition!.latitude, _currentPosition!.longitude), 
+                        f.location
+                      );
+                    }
+                    return ExpeditionCardWidget.suggested(fort: f, distanceToUser: dist);
+                  }).toList(),
+                ),
+              )
+            else
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: Text('Start your first trek to see achievements!'),
                 ),
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: isLocked ? AppColors.outline : AppColors.onSurface, letterSpacing: 0),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTag(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.onSurfaceVariant),
+          ],
+        ),
       ),
     );
   }
