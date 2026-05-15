@@ -69,7 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     final user = _profileService.currentUser;
-    final displayName = user?.displayName ?? 'Explorer';
+    final displayName = user?.displayName ?? 'Trekker';
     final photoUrl = user?.photoURL;
     final colorScheme = Theme.of(context).colorScheme;
     
@@ -97,7 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Text(displayName, style: Theme.of(context).textTheme.displayLarge),
                       Text(
-                        user?.email ?? 'Join the expedition', 
+                        user?.email ?? 'Conquer The Peak', 
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                     ],

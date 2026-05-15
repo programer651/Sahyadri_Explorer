@@ -28,7 +28,7 @@ class SahyadriExplorerApp extends StatelessWidget {
       listenable: ThemeManager(),
       builder: (context, _) {
         return MaterialApp(
-          title: 'Sahyadri Explorer',
+          title: 'ZeniTrek',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,

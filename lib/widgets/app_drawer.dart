@@ -16,7 +16,7 @@ class AppDrawer extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirm Logout'),
-          content: const Text('Are you sure you want to log out of Sahyadri Explorer?'),
+          content: const Text('Are you sure you want to log out of ZeniTrek?'),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -80,7 +80,7 @@ class AppDrawer extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  user?.displayName ?? 'Sahyadri Explorer',
+                  user?.displayName ?? 'ZeniTrek',
                   style: Theme.of(context).textTheme.displaySmall?.copyWith(color: Colors.white, fontSize: 18),
                 ),
                 const SizedBox(height: 4),
@@ -118,8 +118,8 @@ class AppDrawer extends StatelessWidget {
                   showDialog(
                     context: context,
                     builder: (context) => const AlertDialog(
-                      title: Text('About Sahyadri Explorer'),
-                      content: Text('Your companion for discovering the majestic forts and trails of the Western Ghats.\n\nVersion 1.0.0'),
+                      title: Text('About ZeniTrek'),
+                      content: Text('Your companion for discovering the majestic peaks and trails.\n\nVersion 1.0.0'),
                     ),
                   );
                 }),

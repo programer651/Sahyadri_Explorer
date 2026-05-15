@@ -52,7 +52,7 @@ class _MainScaffoldState extends State<MainScaffold> {
               ),
             ),
             title: Text(
-              'SAHYADRI EXPLORER',
+              'ZENITREK',
               style: Theme.of(context).textTheme.displayMedium?.copyWith(
                     fontSize: 18,
                     letterSpacing: 2.0,

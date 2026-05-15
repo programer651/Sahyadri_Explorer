@@ -118,6 +118,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
                 titleColor: colorScheme.error,
               ),
+              const SizedBox(height: 40),
+              Center(
+                child: Column(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(
+                        'assets/logo/zenitrek_logo.png',
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'ZENITREK',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Version 1.0.0',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontSize: 10,
+                        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 100),
             ],
           );

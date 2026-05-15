@@ -20,7 +20,7 @@ void main() {
     await tester.runAsync(() async {
       await tester.pumpWidget(const SahyadriExplorerApp());
       await tester.pump();
-      expect(find.text('Sahyadri Explorer'), findsWidgets);
+      expect(find.text('ZeniTrek'), findsWidgets);
     });
   });
 }

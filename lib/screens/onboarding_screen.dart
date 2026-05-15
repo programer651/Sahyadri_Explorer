@@ -54,7 +54,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${_isLogin ? "Login" : "Sign Up"} failed: $e')),
+          SnackBar(
+            content: Text('${_isLogin ? "Login" : "Sign Up"} failed: $e'),
+          ),
         );
       }
     } finally {
@@ -75,9 +77,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Sign-in failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Sign-in failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -103,14 +105,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Container(
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image: NetworkImage('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=1000'),
+                    image: NetworkImage(
+                      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=1000',
+                    ),
                     fit: BoxFit.cover,
                     alignment: Alignment.bottomCenter,
                     colorFilter: ColorFilter.matrix([
-                      0.2126, 0.7152, 0.0722, 0, 0,
-                      0.2126, 0.7152, 0.0722, 0, 0,
-                      0.2126, 0.7152, 0.0722, 0, 0,
-                      0,      0,      0,      1, 0,
+                      0.2126,
+                      0.7152,
+                      0.0722,
+                      0,
+                      0,
+                      0.2126,
+                      0.7152,
+                      0.0722,
+                      0,
+                      0,
+                      0.2126,
+                      0.7152,
+                      0.0722,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0,
                     ]),
                   ),
                 ),
@@ -131,47 +151,40 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 40.0,
+              ),
               child: Column(
                 children: [
                   const SizedBox(height: 40),
                   Center(
                     child: Column(
                       children: [
-                        Container(
+                        SizedBox(
                           width: 64,
                           height: 64,
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary,
+                          child: ClipRRect(
                             borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: colorScheme.primary.withValues(alpha: 0.2),
-                                blurRadius: 40,
-                                offset: const Offset(0, 20),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Symbols.landscape,
-                            color: colorScheme.onPrimary,
-                            size: 32,
+                            child: Image.asset(
+                              'assets/logo/zenitrek_logo.png',
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          'Sahyadri Explorer',
+                          'ZeniTrek',
                           style: Theme.of(context).textTheme.displayLarge,
                         ),
                         const SizedBox(height: 12),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: Text(
-                            'Quiet adventures for the mindful explorer.',
+                            'CONQUER THE PEAK',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
                         ),
                       ],
@@ -187,7 +200,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text(
                           'EMAIL ADDRESS',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -195,14 +209,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         controller: _emailController,
                         style: TextStyle(color: colorScheme.onSurface),
                         decoration: InputDecoration(
-                          hintText: 'name@example.com',
+                          hintText: 'Email',
                           filled: true,
-                          fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                          fillColor: colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.3),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 18,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -210,7 +228,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text(
                           'PASSWORD',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -221,12 +240,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         decoration: InputDecoration(
                           hintText: '••••••••',
                           filled: true,
-                          fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                          fillColor: colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.3),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 18,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -253,11 +276,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   ),
                                 )
                               : Text(
-                                  _isLogin ? 'Login with Email' : 'Sign Up with Email',
-                                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                                    color: colorScheme.onPrimary,
-                                    fontSize: 16,
-                                  ),
+                                  _isLogin
+                                      ? 'Login with Email'
+                                      : 'Sign Up with Email',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .displaySmall
+                                      ?.copyWith(
+                                        color: colorScheme.onPrimary,
+                                        fontSize: 16,
+                                      ),
                                 ),
                         ),
                       ),
@@ -284,15 +312,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       const SizedBox(height: 24),
                       Row(
                         children: [
-                          Expanded(child: Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                            child: Text(
-                              'OR',
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                          Expanded(
+                            child: Divider(
+                              color: colorScheme.outlineVariant.withValues(
+                                alpha: 0.3,
+                              ),
                             ),
                           ),
-                          Expanded(child: Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24.0,
+                            ),
+                            child: Text(
+                              'OR',
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Divider(
+                              color: colorScheme.outlineVariant.withValues(
+                                alpha: 0.3,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -303,8 +348,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: OutlinedButton(
                           onPressed: _isLoading ? null : _handleGoogleSignIn,
                           style: OutlinedButton.styleFrom(
-                            backgroundColor: isDark ? colorScheme.surface : Colors.white,
-                            side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+                            backgroundColor: isDark
+                                ? colorScheme.surface
+                                : Colors.white,
+                            side: BorderSide(
+                              color: colorScheme.outlineVariant.withValues(
+                                alpha: 0.3,
+                              ),
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(999),
                             ),
@@ -313,19 +364,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ? const SizedBox(
                                   width: 24,
                                   height: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Icon(Icons.g_mobiledata, color: Colors.blue, size: 32),
+                                    const Icon(
+                                      Icons.g_mobiledata,
+                                      color: Colors.blue,
+                                      size: 32,
+                                    ),
                                     const SizedBox(width: 8),
                                     Text(
                                       'Continue with Google',
-                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        fontWeight: FontWeight.w500,
-                                        color: colorScheme.onSurface,
-                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w500,
+                                            color: colorScheme.onSurface,
+                                          ),
                                     ),
                                   ],
                                 ),
@@ -396,14 +456,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildFeatureCard(BuildContext context, IconData icon, String title, String subtitle) {
+  Widget _buildFeatureCard(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String subtitle,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.1)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.1),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,7 +479,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: 4),
           Text(
             title,
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 16),
+            style: Theme.of(
+              context,
+            ).textTheme.displaySmall?.copyWith(fontSize: 16),
           ),
           const SizedBox(height: 4),
           Text(
