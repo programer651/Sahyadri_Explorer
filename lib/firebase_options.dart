@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBC8WURCrLAQIBxhf_9Mv2aJuqyEHIf4Hk',
-    appId: '1:499111016019:android:a1a62cee611dc53171b8a6',
+    appId: '1:499111016019:android:e95f7d0e9d99984671b8a6',
     messagingSenderId: '499111016019',
     projectId: 'sahyadri-explorer-b9c7d',
     storageBucket: 'sahyadri-explorer-b9c7d.firebasestorage.app',
@@ -65,7 +65,7 @@ class DefaultFirebaseOptions {
     storageBucket: 'sahyadri-explorer-b9c7d.firebasestorage.app',
     androidClientId: '499111016019-d2io91pigjk8rgnciu9n089mf6aikkis.apps.googleusercontent.com',
     iosClientId: '499111016019-e4upqtb076sel0tugugm5flftsegalf8.apps.googleusercontent.com',
-    iosBundleId: 'com.example.sahyadriExplorer',
+    iosBundleId: 'com.zenitrek.app',
   );
 
 }

@@ -1,4 +1,4 @@
-package com.example.sahyadri_explorer
+package com.zenitrek.app
 
 import io.flutter.embedding.android.FlutterActivity
 

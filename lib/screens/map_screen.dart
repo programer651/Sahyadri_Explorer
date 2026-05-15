@@ -324,7 +324,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                           urlTemplate: isDark 
                             ? 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' // OpenStreetMap doesn't have a built-in dark mode, but we could use Mapbox or similar. For now, sticking to OSM.
                             : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName: 'com.example.zenitrek',
+                          userAgentPackageName: 'com.zenitrek.app',
                           tileBuilder: isDark ? (context, tileWidget, tile) {
                             return ColorFiltered(
                               colorFilter: const ColorFilter.matrix([

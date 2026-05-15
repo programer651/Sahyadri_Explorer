@@ -18,7 +18,7 @@ void main() {
   testWidgets('App should load', (WidgetTester tester) async {
     // Shimming for images in tests
     await tester.runAsync(() async {
-      await tester.pumpWidget(const SahyadriExplorerApp());
+      await tester.pumpWidget(const ZeniTrekApp());
       await tester.pump();
       expect(find.text('ZeniTrek'), findsWidgets);
     });

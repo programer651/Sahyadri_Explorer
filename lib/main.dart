@@ -16,11 +16,11 @@ void main() async {
     debugPrint("Firebase init failed: $e");
   }
   
-  runApp(const SahyadriExplorerApp());
+  runApp(const ZeniTrekApp());
 }
 
-class SahyadriExplorerApp extends StatelessWidget {
-  const SahyadriExplorerApp({super.key});
+class ZeniTrekApp extends StatelessWidget {
+  const ZeniTrekApp({super.key});
 
   @override
   Widget build(BuildContext context) {
