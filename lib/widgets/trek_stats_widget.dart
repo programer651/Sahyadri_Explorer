@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../models/trek_session_model.dart';
 
 class TrekStatsWidget extends StatefulWidget {
@@ -72,9 +71,9 @@ class _TrekStatsWidgetState extends State<TrekStatsWidget> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildDetailedStat(context, Symbols.distance, 'Distance', '${widget.session.distanceCoveredKm.toStringAsFixed(2)}', 'km'),
-                  _buildDetailedStat(context, Symbols.timer, 'Time', _formatDuration(widget.session.timeElapsed), ''),
-                  _buildDetailedStat(context, Symbols.speed, 'Speed', '${widget.session.currentSpeedKmh.toStringAsFixed(1)}', 'km/h'),
+                  _buildDetailedStat(context, Icons.directions_run, 'Distance', '${widget.session.distanceCoveredKm.toStringAsFixed(2)}', 'km'),
+                  _buildDetailedStat(context, Icons.timer, 'Time', _formatDuration(widget.session.timeElapsed), ''),
+                  _buildDetailedStat(context, Icons.speed, 'Speed', '${widget.session.currentSpeedKmh.toStringAsFixed(1)}', 'km/h'),
                 ],
               ),
             ]

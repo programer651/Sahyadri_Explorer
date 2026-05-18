@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 class ProfileStatsWidget extends StatelessWidget {
   final double totalDistance;
@@ -37,11 +36,11 @@ class ProfileStatsWidget extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildStatItem(context, Symbols.route, totalDistance.toStringAsFixed(1), 'KM DISTANCE'),
+            _buildStatItem(context, Icons.alt_route, totalDistance.toStringAsFixed(1), 'KM DISTANCE'),
             _buildDivider(context),
-            _buildStatItem(context, Symbols.fort, fortsConquered.toString(), 'FORTS'),
+            _buildStatItem(context, Icons.fort, fortsConquered.toString(), 'FORTS'),
             _buildDivider(context),
-            _buildStatItem(context, Symbols.landscape, totalTreks.toString(), 'TREKS'),
+            _buildStatItem(context, Icons.landscape, totalTreks.toString(), 'TREKS'),
           ],
         ),
       ),

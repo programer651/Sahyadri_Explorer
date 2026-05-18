@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../models/fort_model.dart';
 import '../state/trek_state_manager.dart';
 import '../widgets/live_trek_stats_widget.dart';
@@ -98,7 +97,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                isReady ? Symbols.verified : Symbols.directions_walk,
+                isReady ? Icons.verified : Icons.directions_walk,
                 size: 48,
                 color: isReady ? colorScheme.secondary : colorScheme.primary,
               ),
@@ -125,7 +124,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
                 width: 200,
                 child: ElevatedButton.icon(
                   onPressed: isReady ? () => _stateManager.startTrek() : null,
-                  icon: const Icon(Symbols.explore),
+                  icon: const Icon(Icons.explore),
                   label: const Text('Start Trek', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
@@ -190,7 +189,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
                       point: session.activeFort.location,
                       width: 50,
                       height: 50,
-                      child: const Icon(Symbols.flag, color: Colors.red, size: 40),
+                      child: const Icon(Icons.flag, color: Colors.red, size: 40),
                     ),
                   ],
                 ),
@@ -278,14 +277,14 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
                       heroTag: 'pause',
                       onPressed: () => _stateManager.pauseTrek(),
                       backgroundColor: colorScheme.surface,
-                      child: Icon(Symbols.pause, color: colorScheme.primary, size: 36),
+                      child: Icon(Icons.pause, color: colorScheme.primary, size: 36),
                     ),
                   if (_stateManager.isPaused)
                     FloatingActionButton.large(
                       heroTag: 'resume',
                       onPressed: () => _stateManager.resumeTrek(),
                       backgroundColor: colorScheme.primary,
-                      child: Icon(Symbols.play_arrow, color: colorScheme.onPrimary, size: 36),
+                      child: Icon(Icons.play_arrow, color: colorScheme.onPrimary, size: 36),
                     ),
                   const SizedBox(width: 32),
                   FloatingActionButton.extended(
@@ -293,7 +292,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> with SingleTick
                     onPressed: () => _stateManager.endTrek(),
                     backgroundColor: colorScheme.error,
                     foregroundColor: colorScheme.onError,
-                    icon: const Icon(Symbols.stop),
+                    icon: const Icon(Icons.stop),
                     label: const Text('Abandon', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ],

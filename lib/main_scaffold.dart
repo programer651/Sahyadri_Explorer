@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'screens/map_screen.dart';
 import 'screens/live_tracking_screen.dart';
@@ -35,6 +34,7 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
     return ValueListenableBuilder<int>(
       valueListenable: NavigationStateManager().selectedIndex,
       builder: (context, selectedIndex, child) {
@@ -47,7 +47,7 @@ class _MainScaffoldState extends State<MainScaffold> {
             ),
             leading: Builder(
               builder: (context) => IconButton(
-                icon: Icon(Symbols.menu, color: Theme.of(context).colorScheme.primary),
+                icon: Icon(Icons.menu, color: Theme.of(context).colorScheme.primary),
                 onPressed: () => Scaffold.of(context).openDrawer(),
               ),
             ),
@@ -84,7 +84,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                             ? DecorationImage(image: NetworkImage(photoUrl), fit: BoxFit.cover)
                             : null,
                         ),
-                        child: photoUrl == null ? Icon(Symbols.person, size: 20, color: Theme.of(context).colorScheme.onSurface) : null,
+                        child: photoUrl == null ? Icon(Icons.person, size: 20, color: Theme.of(context).colorScheme.onSurface) : null,
                       );
                     },
                   ),
@@ -96,9 +96,14 @@ class _MainScaffoldState extends State<MainScaffold> {
               ? LiveTrackingScreen(activeFort: _activeFort) // dynamically pass active fort
               : _screens[selectedIndex],
           bottomNavigationBar: SafeArea(
+            bottom: true,
             child: Container(
               height: 80,
-              margin: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+              margin: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                bottom: bottomPadding > 0 ? 8 : 16,
+              ),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(32),
@@ -114,9 +119,9 @@ class _MainScaffoldState extends State<MainScaffold> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildNavItem(0, selectedIndex, Symbols.explore, 'Map'),
-                  _buildNavItem(1, selectedIndex, Symbols.distance, 'Live'),
-                  _buildNavItem(2, selectedIndex, Symbols.person, 'Profile'),
+                  _buildNavItem(0, selectedIndex, Icons.explore_outlined, 'Map'),
+                  _buildNavItem(1, selectedIndex, Icons.directions_run, 'Live'),
+                  _buildNavItem(2, selectedIndex, Icons.person_outline, 'Profile'),
                 ],
               ),
             ),

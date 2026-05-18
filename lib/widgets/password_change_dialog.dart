@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../services/password_change_service.dart';
 
 class PasswordChangeDialog extends StatefulWidget {
@@ -62,7 +61,7 @@ class _PasswordChangeDialogState extends State<PasswordChangeDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       title: Row(
         children: [
-          Icon(Symbols.lock_reset, color: colorScheme.primary),
+          Icon(Icons.lock_open, color: colorScheme.primary),
           const SizedBox(width: 12),
           Text('Update Password', style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 20)),
         ],
@@ -133,7 +132,7 @@ class _PasswordChangeDialogState extends State<PasswordChangeDialog> {
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         suffixIcon: IconButton(
-          icon: Icon(obscure ? Symbols.visibility : Symbols.visibility_off, size: 20),
+          icon: Icon(obscure ? Icons.visibility : Icons.visibility_off, size: 20),
           onPressed: onToggle,
         ),
       ),
