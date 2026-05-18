@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../models/expedition_model.dart';
 import '../models/fort_model.dart';
 import '../app_theme.dart';
@@ -69,7 +68,7 @@ class ExpeditionCardWidget extends StatelessWidget {
             ),
             child: Center(
               child: Icon(
-                type == ExpeditionCardType.recent ? Symbols.mountain_flag : Symbols.explore,
+                type == ExpeditionCardType.recent ? Icons.outlined_flag : Icons.explore,
                 color: Colors.white,
                 size: 48,
               ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../models/fort_model.dart';
 import '../services/conquest_storage_service.dart';
 import '../services/user_profile_service.dart';
@@ -88,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   radius: 40,
                   backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                   backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-                  child: photoUrl == null ? Icon(Symbols.person, size: 40, color: colorScheme.primary) : null,
+                  child: photoUrl == null ? Icon(Icons.person, size: 40, color: colorScheme.primary) : null,
                 ),
                 const SizedBox(width: 20),
                 Expanded(
@@ -120,7 +119,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Symbols.location_on, size: 16, color: colorScheme.secondary),
+                    Icon(Icons.location_on, size: 16, color: colorScheme.secondary),
                     const SizedBox(width: 6),
                     Text(
                       _readableLocation ?? '${_currentPosition!.latitude.toStringAsFixed(2)}, ${_currentPosition!.longitude.toStringAsFixed(2)}',
