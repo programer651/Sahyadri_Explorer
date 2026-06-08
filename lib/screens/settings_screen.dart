@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/theme_manager.dart';
 import '../services/notification_settings_service.dart';
@@ -59,7 +58,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               _buildSectionHeader('PREFERENCES'),
               _buildSettingTile(
-                icon: Symbols.dark_mode,
+                icon: Icons.dark_mode,
                 title: 'Dark Mode',
                 trailing: Switch(
                   value: _themeManager.isDarkMode,
@@ -71,7 +70,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 32),
               _buildSectionHeader('NOTIFICATIONS'),
               _buildSettingTile(
-                icon: Symbols.notifications,
+                icon: Icons.notifications,
                 title: 'Enable Notifications',
                 trailing: Switch(
                   value: _notificationsEnabled,
@@ -87,7 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSectionHeader('ACCOUNT'),
               if (isGoogleUser)
                 _buildSettingTile(
-                  icon: Symbols.lock,
+                  icon: Icons.lock_outline,
                   title: 'Change Password',
                   onTap: () => showDialog(
                     context: context,
@@ -97,12 +96,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               // if (isGoogleUser)
               //   _buildSettingTile(
-              //     icon: Symbols.account_circle,
+              //     icon: Icons.account_circle,
               //     title: 'Google Account Linked',
               //     subtitle: 'Password managed by Google',
               //   ),
               _buildSettingTile(
-                icon: Symbols.logout,
+                icon: Icons.logout,
                 title: 'Logout',
                 onTap: () async {
                   await FirebaseAuth.instance.signOut();
@@ -185,7 +184,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ? NetworkImage(user!.photoURL!)
                 : null,
             child: user?.photoURL == null
-                ? Icon(Symbols.person, size: 36, color: colorScheme.primary)
+                ? Icon(Icons.person, size: 36, color: colorScheme.primary)
                 : null,
           ),
           const SizedBox(width: 20),
@@ -194,7 +193,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  user?.displayName ?? 'Explorer',
+                  user?.displayName ?? 'Trekker',
                   style: Theme.of(
                     context,
                   ).textTheme.displaySmall?.copyWith(fontSize: 18),
@@ -271,7 +270,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing ??
             (onTap != null
                 ? Icon(
-                    Symbols.chevron_right,
+                    Icons.chevron_right,
                     size: 20,
                     color: colorScheme.onSurfaceVariant,
                   )

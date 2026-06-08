@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../models/trek_session_model.dart';
 import '../state/navigation_state_manager.dart';
 
@@ -45,7 +44,7 @@ class TrekSummaryDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                isVictory ? Symbols.workspace_premium : Symbols.flag,
+                isVictory ? Icons.stars : Icons.flag,
                 size: 80,
                 color: isVictory ? colorScheme.secondary : colorScheme.onSurfaceVariant,
               ),
@@ -87,7 +86,7 @@ class TrekSummaryDialog extends StatelessWidget {
                   onPressed: () {
                     NavigationStateManager().navigateToProfile();
                   },
-                  icon: const Icon(Symbols.person),
+                  icon: const Icon(Icons.person),
                   label: const Text('View Profile'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
@@ -104,7 +103,7 @@ class TrekSummaryDialog extends StatelessWidget {
                   onPressed: () {
                     NavigationStateManager().navigateToMap();
                   },
-                  icon: const Icon(Symbols.explore),
+                  icon: const Icon(Icons.explore),
                   label: const Text('Return to Map'),
                   style: TextButton.styleFrom(
                     foregroundColor: colorScheme.onSurfaceVariant,

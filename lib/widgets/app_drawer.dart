@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../app_theme.dart';
 import '../main_scaffold.dart';
 import '../screens/settings_screen.dart';
@@ -76,7 +75,7 @@ class AppDrawer extends StatelessWidget {
                   radius: 32,
                   backgroundColor: Colors.white24,
                   backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-                  child: photoUrl == null ? const Icon(Symbols.person, color: Colors.white, size: 32) : null,
+                  child: photoUrl == null ? const Icon(Icons.person, color: Colors.white, size: 32) : null,
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -97,23 +96,23 @@ class AppDrawer extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
-                _buildDrawerTile(context, Symbols.home, 'Home', () {
+                _buildDrawerTile(context, Icons.home, 'Home', () {
                   Navigator.pop(context);
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainScaffold()));
                 }),
-                _buildDrawerTile(context, Symbols.map, 'Map View', () {
+                _buildDrawerTile(context, Icons.map, 'Map View', () {
                   Navigator.pop(context);
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainScaffold()));
                 }),
-                _buildDrawerTile(context, Symbols.favorite, 'Favorites', () {
+                _buildDrawerTile(context, Icons.favorite, 'Favorites', () {
                   Navigator.pop(context);
                 }, trailing: 'Coming Soon'),
                 const Divider(height: 32, indent: 24, endIndent: 24),
-                _buildDrawerTile(context, Symbols.settings, 'Settings', () {
+                _buildDrawerTile(context, Icons.settings, 'Settings', () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
                 }),
-                _buildDrawerTile(context, Symbols.info, 'About', () {
+                _buildDrawerTile(context, Icons.info_outline, 'About', () {
                   Navigator.pop(context);
                   showDialog(
                     context: context,
@@ -131,7 +130,7 @@ class AppDrawer extends StatelessWidget {
           const Divider(height: 1),
           ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            leading: Icon(Symbols.logout, color: colorScheme.error),
+            leading: Icon(Icons.logout, color: colorScheme.error),
             title: Text('Logout', style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.bold)),
             onTap: () => _handleLogout(context),
           ),

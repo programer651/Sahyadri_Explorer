@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../models/expedition_model.dart';
 import '../app_theme.dart';
 
@@ -45,7 +44,7 @@ class TrekHistoryScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Symbols.explore, size: 64, color: colorScheme.outlineVariant),
+                    Icon(Icons.explore, size: 64, color: colorScheme.outlineVariant),
                     const SizedBox(height: 16),
                     Text(
                       'No entries in your journal yet',
@@ -151,9 +150,9 @@ class _TrekDetailCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStatInfo(context, Symbols.route, '${expedition.distanceKm.toStringAsFixed(1)} KM', 'DISTANCE'),
-              _buildStatInfo(context, Symbols.schedule, _formatDuration(expedition.duration), 'DURATION'),
-              _buildStatInfo(context, Symbols.analytics, '${(expedition.completionPercentage * 100).toInt()}%', 'PROGRESS'),
+              _buildStatInfo(context, Icons.alt_route, '${expedition.distanceKm.toStringAsFixed(1)} KM', 'DISTANCE'),
+              _buildStatInfo(context, Icons.schedule, _formatDuration(expedition.duration), 'DURATION'),
+              _buildStatInfo(context, Icons.analytics, '${(expedition.completionPercentage * 100).toInt()}%', 'PROGRESS'),
             ],
           ),
         ],

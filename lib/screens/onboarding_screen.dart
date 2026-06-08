@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../app_theme.dart';
 import '../main_scaffold.dart';
 import '../services/auth_service.dart';
@@ -401,7 +400,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       Expanded(
                         child: _buildFeatureCard(
                           context,
-                          Symbols.explore,
+                          Icons.explore,
                           'Discover',
                           'Hidden forts and secret waterfalls.',
                         ),
@@ -410,7 +409,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       Expanded(
                         child: _buildFeatureCard(
                           context,
-                          Symbols.sensor_occupied,
+                          Icons.navigation,
                           'Navigate',
                           'Offline maps for the deepest trails.',
                         ),
