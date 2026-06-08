@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "499111016019-817ktbvbefjlic7n03frnurn5oo7eg7e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zenitrek.app",
+            "certificate_hash": "e93801c6912befb7da0bb7112c4ec6d1458803cc"
+          }
+        },
+        {
           "client_id": "499111016019-sqavvkghnt4ssvpgu0t9809nbhrg9pnr.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -22,7 +30,15 @@
           }
         },
         {
-          "client_id": "499111016019-aftr1pm71lpj9he4vdc0ottp95l71qkk.apps.googleusercontent.com",
+          "client_id": "499111016019-udg211lbljrjt28gjmgdqlfod2k3t254.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zenitrek.app",
+            "certificate_hash": "9ff6f94281f69108b16b6a6435bf05bbef1ef0ef"
+          }
+        },
+        {
+          "client_id": "499111016019-ujsh861iofu78a7j4ilds4nv6dhhsq0i.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -37,6 +53,13 @@
             {
               "client_id": "499111016019-aftr1pm71lpj9he4vdc0ottp95l71qkk.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "499111016019-e4upqtb076sel0tugugm5flftsegalf8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.sahyadriExplorer"
+              }
             }
           ]
         }
