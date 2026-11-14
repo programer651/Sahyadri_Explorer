@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../models/trek_session_model.dart';
 
 class LiveTrekStatsWidget extends StatelessWidget {
@@ -6,7 +6,7 @@ class LiveTrekStatsWidget extends StatelessWidget {
   final double completionPercentage;
 
   const LiveTrekStatsWidget({
-    super.key, 
+    super.key,
     required this.session,
     required this.completionPercentage,
   });
@@ -27,12 +27,14 @@ class LiveTrekStatsWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surface.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1), 
-            blurRadius: 15, 
-            offset: const Offset(0, 6)
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -46,11 +48,18 @@ class LiveTrekStatsWidget extends StatelessWidget {
             children: [
               Text(
                 'Trek Progress',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 11),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  fontSize: 11,
+                ),
               ),
               Text(
                 '${(completionPercentage * 100).toInt()}%',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: colorScheme.primary),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: colorScheme.primary,
+                ),
               ),
             ],
           ),
@@ -70,18 +79,32 @@ class LiveTrekStatsWidget extends StatelessWidget {
             children: [
               Text(
                 '${session.distanceCoveredKm.toStringAsFixed(2)} KM',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: colorScheme.onSurface),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: colorScheme.onSurface,
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text('•', style: TextStyle(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.bold)),
+                child: Text(
+                  '•',
+                  style: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               Text(
                 _formatDuration(session.timeElapsed),
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: colorScheme.onSurface),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: colorScheme.onSurface,
+                ),
               ),
             ],
-          )
+          ),
         ],
       ),
     );

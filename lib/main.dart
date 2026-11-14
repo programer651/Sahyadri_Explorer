@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'app_theme.dart';
 import 'screens/onboarding_screen.dart';
@@ -6,7 +6,7 @@ import 'services/theme_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   final themeManager = ThemeManager();
   await themeManager.init();
 
@@ -15,7 +15,7 @@ void main() async {
   } catch (e) {
     debugPrint("Firebase init failed: $e");
   }
-  
+
   runApp(const ZeniTrekApp());
 }
 

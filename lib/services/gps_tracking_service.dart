@@ -14,11 +14,14 @@ abstract class LocationTrackingService {
 
 class GeolocatorTrackingService implements LocationTrackingService {
   final _locationController = StreamController<LatLng>.broadcast();
+  final _positionController = StreamController<Position>.broadcast();
   StreamSubscription<Position>? _positionStream;
   bool _isPaused = false;
 
   @override
   Stream<LatLng> get locationStream => _locationController.stream;
+
+  Stream<Position> get positionStream => _positionController.stream;
 
   @override
   Future<void> startTracking(LatLng destination) async {
@@ -51,6 +54,7 @@ class GeolocatorTrackingService implements LocationTrackingService {
       locationSettings: const LocationSettings(accuracy: LocationAccuracy.high)
     );
     _locationController.add(LatLng(initialPos.latitude, initialPos.longitude));
+    _positionController.add(initialPos);
 
     // Listen to continuous stream
     _positionStream = Geolocator.getPositionStream(
@@ -61,6 +65,7 @@ class GeolocatorTrackingService implements LocationTrackingService {
     ).listen((Position position) {
       if (_isPaused) return;
       _locationController.add(LatLng(position.latitude, position.longitude));
+      _positionController.add(position);
     });
   }
 

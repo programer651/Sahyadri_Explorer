@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../models/trek_session_model.dart';
 import '../state/navigation_state_manager.dart';
 
@@ -46,7 +46,9 @@ class TrekSummaryDialog extends StatelessWidget {
               Icon(
                 isVictory ? Icons.stars : Icons.flag,
                 size: 80,
-                color: isVictory ? colorScheme.secondary : colorScheme.onSurfaceVariant,
+                color: isVictory
+                    ? colorScheme.secondary
+                    : colorScheme.onSurfaceVariant,
               ),
               const SizedBox(height: 24),
               Text(
@@ -54,7 +56,9 @@ class TrekSummaryDialog extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: isVictory ? colorScheme.secondary : colorScheme.onSurface,
+                  color: isVictory
+                      ? colorScheme.secondary
+                      : colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
@@ -67,15 +71,29 @@ class TrekSummaryDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  color: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.3,
+                  ),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildMiniStat(context, 'Completion', '${(completionPercentage * 100).toInt()}%'),
-                    _buildMiniStat(context, 'Distance', '${session.distanceCoveredKm.toStringAsFixed(2)} km'),
-                    _buildMiniStat(context, 'Time', _formatDuration(session.timeElapsed)),
+                    _buildMiniStat(
+                      context,
+                      'Completion',
+                      '${(completionPercentage * 100).toInt()}%',
+                    ),
+                    _buildMiniStat(
+                      context,
+                      'Distance',
+                      '${session.distanceCoveredKm.toStringAsFixed(2)} km',
+                    ),
+                    _buildMiniStat(
+                      context,
+                      'Time',
+                      _formatDuration(session.timeElapsed),
+                    ),
                   ],
                 ),
               ),
@@ -92,7 +110,9 @@ class TrekSummaryDialog extends StatelessWidget {
                     backgroundColor: colorScheme.primary,
                     foregroundColor: colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
               ),
@@ -108,7 +128,9 @@ class TrekSummaryDialog extends StatelessWidget {
                   style: TextButton.styleFrom(
                     foregroundColor: colorScheme.onSurfaceVariant,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
               ),
@@ -125,7 +147,11 @@ class TrekSummaryDialog extends StatelessWidget {
       children: [
         Text(
           value,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: colorScheme.onSurface),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: colorScheme.onSurface,
+          ),
         ),
         const SizedBox(height: 4),
         Text(

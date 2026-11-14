@@ -1,15 +1,19 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
+import 'package:geolocator/geolocator.dart';
 import '../models/fort_model.dart';
 import '../repositories/fort_repository.dart';
-import '../app_theme.dart';
+import '../state/navigation_state_manager.dart';
 
 class MapScreen extends StatefulWidget {
   final void Function(Fort)? onStartTrek;
+  final VoidCallback? onStartWalk;
 
-  const MapScreen({super.key, this.onStartTrek});
+  const MapScreen({super.key, this.onStartTrek, this.onStartWalk});
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -18,6 +22,7 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   final MapController _mapController = MapController();
   late final AnimationController _animationController;
+  late final AnimationController _pulseController;
 
   final LatLng _indiaCenter = const LatLng(20.5937, 78.9629);
 
@@ -26,6 +31,11 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   Fort? _selectedFort;
   List<Fort> _nearbyForts = [];
 
+  LatLng? _currentLocation;
+  double? _currentAccuracy;
+  StreamSubscription<Position>? _positionStreamSub;
+  bool _isLocating = false;
+
   @override
   void initState() {
     super.initState();
@@ -33,7 +43,12 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 700),
     );
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
     _loadForts();
+    _initLocation(shouldAnimate: false, showFeedback: false);
   }
 
   Future<void> _loadForts() async {
@@ -48,7 +63,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _positionStreamSub?.cancel();
     _animationController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -86,6 +103,218 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     _animationController.forward().whenComplete(() {
       animation.removeListener(listener);
     });
+  }
+
+  Future<void> _initLocation({
+    bool shouldAnimate = false,
+    bool showFeedback = false,
+  }) async {
+    if (mounted) {
+      setState(() {
+        _isLocating = true;
+      });
+    }
+
+    try {
+      final isServiceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!isServiceEnabled) {
+        if (showFeedback && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Location services are disabled. Please enable GPS in device settings.',
+              ),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (showFeedback && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Location permissions are denied. We cannot show your current position.',
+                ),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        if (showFeedback && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Location permissions are permanently denied. Please enable them in app settings.',
+              ),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+
+      // 1. Check last known position for quick initial display
+      final lastKnown = await Geolocator.getLastKnownPosition();
+      if (lastKnown != null && mounted) {
+        setState(() {
+          _currentLocation = LatLng(lastKnown.latitude, lastKnown.longitude);
+          _currentAccuracy = lastKnown.accuracy;
+        });
+        if (shouldAnimate) {
+          _animatedMapMove(_currentLocation!, 14.0);
+        }
+      }
+
+      // 2. Fetch fresh high-accuracy position
+      final currentPos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+
+      if (mounted) {
+        setState(() {
+          _currentLocation = LatLng(currentPos.latitude, currentPos.longitude);
+          _currentAccuracy = currentPos.accuracy;
+        });
+
+        if (shouldAnimate) {
+          _animatedMapMove(_currentLocation!, 14.0);
+        }
+      }
+
+      // 3. Keep updating continuously as user moves
+      _startLocationStream();
+    } catch (e) {
+      debugPrint('Location error: $e');
+      if (showFeedback && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Unable to obtain location: $e'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLocating = false;
+        });
+      }
+    }
+  }
+
+  void _startLocationStream() {
+    _positionStreamSub?.cancel();
+    _positionStreamSub = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 3,
+      ),
+    ).listen(
+      (Position position) {
+        if (!mounted) return;
+        setState(() {
+          _currentLocation = LatLng(position.latitude, position.longitude);
+          _currentAccuracy = position.accuracy;
+        });
+      },
+      onError: (e) {
+        debugPrint('Location stream error: $e');
+      },
+    );
+  }
+
+  void _handleCurrentLocationPressed() {
+    if (_currentLocation != null) {
+      _animatedMapMove(_currentLocation!, 14.0);
+    } else {
+      _initLocation(shouldAnimate: true, showFeedback: true);
+    }
+  }
+
+  Marker _buildCurrentLocationMarker() {
+    return Marker(
+      point: _currentLocation!,
+      width: 52,
+      height: 52,
+      alignment: Alignment.center,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          if (widget.onStartWalk != null) {
+            widget.onStartWalk!();
+          } else {
+            NavigationStateManager().navigateToLive(walkingMode: true);
+          }
+        },
+        child: Tooltip(
+          message: 'Start Walking Activity',
+          child: AnimatedBuilder(
+            animation: _pulseController,
+            builder: (context, child) {
+              final pulse = _pulseController.value;
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Pulsing accuracy halo / wave
+                  Container(
+                    width: 22 + (pulse * 24),
+                    height: 22 + (pulse * 24),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF2196F3).withValues(
+                        alpha: 0.35 * (1.0 - (pulse * 0.6)),
+                      ),
+                    ),
+                  ),
+                  // Crisp white ring with elevation for contrast
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Solid vibrant blue location dot with walking figure
+                  Container(
+                    width: 17,
+                    height: 17,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFF1E88E5),
+                    ),
+                    child: const Icon(
+                      Icons.directions_walk,
+                      size: 11,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
   }
 
   void _handleFortTap(BuildContext context, Fort fort) {
@@ -362,8 +591,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               children: [
                 LayoutBuilder(
                   builder: (context, constraints) {
-                    if (constraints.maxWidth == 0 || constraints.maxHeight == 0)
+                    if (constraints.maxWidth == 0 ||
+                        constraints.maxHeight == 0) {
                       return const SizedBox.shrink();
+                    }
                     return FlutterMap(
                       key: const ValueKey('SathyadriMapV1'),
                       mapController: _mapController,
@@ -416,21 +647,38 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                 }
                               : null,
                         ),
-                        if (_selectedFort != null)
+                        if (_selectedFort != null || _currentLocation != null)
                           CircleLayer(
                             circles: [
-                              CircleMarker(
-                                point: _selectedFort!.location,
-                                radius: 50000,
-                                useRadiusInMeter: true,
-                                color: colorScheme.primary.withValues(
-                                  alpha: 0.05,
+                              if (_selectedFort != null)
+                                CircleMarker(
+                                  point: _selectedFort!.location,
+                                  radius: 50000,
+                                  useRadiusInMeter: true,
+                                  color: colorScheme.primary.withValues(
+                                    alpha: 0.05,
+                                  ),
+                                  borderColor: colorScheme.primary.withValues(
+                                    alpha: 0.2,
+                                  ),
+                                  borderStrokeWidth: 2,
                                 ),
-                                borderColor: colorScheme.primary.withValues(
-                                  alpha: 0.2,
+                              if (_currentLocation != null)
+                                CircleMarker(
+                                  point: _currentLocation!,
+                                  radius: (_currentAccuracy != null &&
+                                          _currentAccuracy! > 0)
+                                      ? _currentAccuracy!.clamp(15.0, 500.0)
+                                      : 25.0,
+                                  useRadiusInMeter: true,
+                                  color: const Color(0xFF2196F3).withValues(
+                                    alpha: 0.12,
+                                  ),
+                                  borderColor: const Color(0xFF2196F3).withValues(
+                                    alpha: 0.35,
+                                  ),
+                                  borderStrokeWidth: 1.5,
                                 ),
-                                borderStrokeWidth: 2,
-                              ),
                             ],
                           ),
                         if (_selectedFort != null)
@@ -529,6 +777,12 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                 )
                                 .toList(),
                           ),
+                        if (_currentLocation != null)
+                          MarkerLayer(
+                            markers: [
+                              _buildCurrentLocationMarker(),
+                            ],
+                          ),
                       ],
                     );
                   },
@@ -614,10 +868,45 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                       ? (bottomNavBarTop + 16.0 + 88.0)
                       : (bottomNavBarTop + 16.0),
                   right: 16,
-                  child: FloatingActionButton(
-                    onPressed: () => _animatedMapMove(_indiaCenter, 5.0),
-                    backgroundColor: colorScheme.surface,
-                    child: Icon(Icons.my_location, color: colorScheme.primary),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FloatingActionButton.small(
+                        heroTag: 'map_overview_btn',
+                        onPressed: () => _animatedMapMove(_indiaCenter, 5.0),
+                        backgroundColor: colorScheme.surface,
+                        tooltip: 'Overview',
+                        child: Icon(
+                          Icons.zoom_out_map,
+                          color: colorScheme.primary,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      FloatingActionButton(
+                        heroTag: 'my_location_btn',
+                        onPressed: _handleCurrentLocationPressed,
+                        backgroundColor: colorScheme.surface,
+                        tooltip: 'My Location',
+                        child: _isLocating
+                            ? SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: colorScheme.primary,
+                                ),
+                              )
+                            : Icon(
+                                _currentLocation != null
+                                    ? Icons.my_location
+                                    : Icons.location_searching,
+                                color: _currentLocation != null
+                                    ? const Color(0xFF2196F3)
+                                    : colorScheme.primary,
+                              ),
+                      ),
+                    ],
                   ),
                 ),
               ],

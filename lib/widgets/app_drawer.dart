@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../app_theme.dart';
 import '../main_scaffold.dart';
 import '../screens/settings_screen.dart';
 import '../screens/onboarding_screen.dart';
@@ -19,11 +18,20 @@ class AppDrawer extends StatelessWidget {
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text('Cancel', style: TextStyle(color: colorScheme.onSurfaceVariant)),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: colorScheme.onSurfaceVariant),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text('Logout', style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.bold)),
+              child: Text(
+                'Logout',
+                style: TextStyle(
+                  color: colorScheme.error,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );
@@ -56,11 +64,18 @@ class AppDrawer extends StatelessWidget {
           // Custom Header
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(top: 64, bottom: 24, left: 24, right: 24),
+            padding: const EdgeInsets.only(
+              top: 64,
+              bottom: 24,
+              left: 24,
+              right: 24,
+            ),
             decoration: BoxDecoration(
               color: colorScheme.primary,
               image: DecorationImage(
-                image: const NetworkImage('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=1000'),
+                image: const NetworkImage(
+                  'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=1000',
+                ),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   colorScheme.primary.withValues(alpha: 0.8),
@@ -74,18 +89,28 @@ class AppDrawer extends StatelessWidget {
                 CircleAvatar(
                   radius: 32,
                   backgroundColor: Colors.white24,
-                  backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-                  child: photoUrl == null ? const Icon(Icons.person, color: Colors.white, size: 32) : null,
+                  backgroundImage: photoUrl != null
+                      ? NetworkImage(photoUrl)
+                      : null,
+                  child: photoUrl == null
+                      ? const Icon(Icons.person, color: Colors.white, size: 32)
+                      : null,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   user?.displayName ?? 'ZeniTrek',
-                  style: Theme.of(context).textTheme.displaySmall?.copyWith(color: Colors.white, fontSize: 18),
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    color: Colors.white,
+                    fontSize: 18,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   email,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70, fontSize: 13),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.white70,
+                    fontSize: 13,
+                  ),
                 ),
               ],
             ),
@@ -98,11 +123,21 @@ class AppDrawer extends StatelessWidget {
               children: [
                 _buildDrawerTile(context, Icons.home, 'Home', () {
                   Navigator.pop(context);
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainScaffold()));
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MainScaffold(),
+                    ),
+                  );
                 }),
                 _buildDrawerTile(context, Icons.map, 'Map View', () {
                   Navigator.pop(context);
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainScaffold()));
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MainScaffold(),
+                    ),
+                  );
                 }),
                 _buildDrawerTile(context, Icons.favorite, 'Favorites', () {
                   Navigator.pop(context);
@@ -110,7 +145,12 @@ class AppDrawer extends StatelessWidget {
                 const Divider(height: 32, indent: 24, endIndent: 24),
                 _buildDrawerTile(context, Icons.settings, 'Settings', () {
                   Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsScreen(),
+                    ),
+                  );
                 }),
                 _buildDrawerTile(context, Icons.info_outline, 'About', () {
                   Navigator.pop(context);
@@ -118,7 +158,9 @@ class AppDrawer extends StatelessWidget {
                     context: context,
                     builder: (context) => const AlertDialog(
                       title: Text('About ZeniTrek'),
-                      content: Text('Your companion for discovering the majestic peaks and trails.\n\nVersion 1.0.0'),
+                      content: Text(
+                        'Your companion for discovering the majestic peaks and trails.\n\nVersion 1.0.0',
+                      ),
                     ),
                   );
                 }),
@@ -129,9 +171,18 @@ class AppDrawer extends StatelessWidget {
           // Logout Item
           const Divider(height: 1),
           ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 8,
+            ),
             leading: Icon(Icons.logout, color: colorScheme.error),
-            title: Text('Logout', style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.bold)),
+            title: Text(
+              'Logout',
+              style: TextStyle(
+                color: colorScheme.error,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             onTap: () => _handleLogout(context),
           ),
           const SizedBox(height: 16),
@@ -140,13 +191,27 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerTile(BuildContext context, IconData icon, String title, VoidCallback onTap, {String? trailing}) {
+  Widget _buildDrawerTile(
+    BuildContext context,
+    IconData icon,
+    String title,
+    VoidCallback onTap, {
+    String? trailing,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 24),
       leading: Icon(icon, color: colorScheme.primary),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-      trailing: trailing != null ? Text(trailing, style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant)) : null,
+      trailing: trailing != null
+          ? Text(
+              trailing,
+              style: TextStyle(
+                fontSize: 10,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            )
+          : null,
       onTap: onTap,
     );
   }

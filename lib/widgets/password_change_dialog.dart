@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../services/password_change_service.dart';
 
 class PasswordChangeDialog extends StatefulWidget {
@@ -14,7 +14,7 @@ class _PasswordChangeDialogState extends State<PasswordChangeDialog> {
   final _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _service = PasswordChangeService();
-  
+
   bool _isLoading = false;
   bool _obscureCurrent = true;
   bool _obscureNew = true;
@@ -56,14 +56,19 @@ class _PasswordChangeDialogState extends State<PasswordChangeDialog> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       title: Row(
         children: [
           Icon(Icons.lock_open, color: colorScheme.primary),
           const SizedBox(width: 12),
-          Text('Update Password', style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 20)),
+          Text(
+            'Update Password',
+            style: Theme.of(
+              context,
+            ).textTheme.displaySmall?.copyWith(fontSize: 20),
+          ),
         ],
       ),
       content: SingleChildScrollView(
@@ -76,7 +81,8 @@ class _PasswordChangeDialogState extends State<PasswordChangeDialog> {
                 controller: _currentPasswordController,
                 label: 'Current Password',
                 obscure: _obscureCurrent,
-                onToggle: () => setState(() => _obscureCurrent = !_obscureCurrent),
+                onToggle: () =>
+                    setState(() => _obscureCurrent = !_obscureCurrent),
               ),
               const SizedBox(height: 16),
               _buildPasswordField(
@@ -84,15 +90,19 @@ class _PasswordChangeDialogState extends State<PasswordChangeDialog> {
                 label: 'New Password',
                 obscure: _obscureNew,
                 onToggle: () => setState(() => _obscureNew = !_obscureNew),
-                validator: (v) => (v?.length ?? 0) < 6 ? 'Min 6 characters' : null,
+                validator: (v) =>
+                    (v?.length ?? 0) < 6 ? 'Min 6 characters' : null,
               ),
               const SizedBox(height: 16),
               _buildPasswordField(
                 controller: _confirmPasswordController,
                 label: 'Confirm New Password',
                 obscure: _obscureConfirm,
-                onToggle: () => setState(() => _obscureConfirm = !_obscureConfirm),
-                validator: (v) => v != _newPasswordController.text ? 'Passwords do not match' : null,
+                onToggle: () =>
+                    setState(() => _obscureConfirm = !_obscureConfirm),
+                validator: (v) => v != _newPasswordController.text
+                    ? 'Passwords do not match'
+                    : null,
               ),
             ],
           ),
@@ -101,18 +111,30 @@ class _PasswordChangeDialogState extends State<PasswordChangeDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text('Cancel', style: TextStyle(color: colorScheme.onSurfaceVariant)),
+          child: Text(
+            'Cancel',
+            style: TextStyle(color: colorScheme.onSurfaceVariant),
+          ),
         ),
         ElevatedButton(
           onPressed: _isLoading ? null : _changePassword,
           style: ElevatedButton.styleFrom(
             backgroundColor: colorScheme.primary,
             foregroundColor: colorScheme.onPrimary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
-          child: _isLoading 
-            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) 
-            : const Text('Update'),
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Text('Update'),
         ),
       ],
     );
@@ -132,7 +154,10 @@ class _PasswordChangeDialogState extends State<PasswordChangeDialog> {
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         suffixIcon: IconButton(
-          icon: Icon(obscure ? Icons.visibility : Icons.visibility_off, size: 20),
+          icon: Icon(
+            obscure ? Icons.visibility : Icons.visibility_off,
+            size: 20,
+          ),
           onPressed: onToggle,
         ),
       ),

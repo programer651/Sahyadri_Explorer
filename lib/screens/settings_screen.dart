@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/theme_manager.dart';
 import '../services/notification_settings_service.dart';
@@ -63,7 +63,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 trailing: Switch(
                   value: _themeManager.isDarkMode,
                   onChanged: (v) => _themeManager.toggleTheme(v),
-                  activeColor: colorScheme.secondary,
+                  activeThumbColor: colorScheme.secondary,
                 ),
               ),
 
@@ -78,7 +78,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     setState(() => _notificationsEnabled = v);
                     _notifService.setNotificationsEnabled(v);
                   },
-                  activeColor: colorScheme.secondary,
+                  activeThumbColor: colorScheme.secondary,
                 ),
               ),
 
@@ -143,7 +143,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       'Version 1.0.0',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         fontSize: 10,
-                        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                        color: colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.5,
+                        ),
                       ),
                     ),
                   ],

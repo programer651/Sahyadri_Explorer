@@ -3,10 +3,20 @@ import 'package:geolocator/geolocator.dart';
 
 class LocationService {
   Future<String?> getReadableLocation(Position position) async {
+    return getReadableLocationFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
+  }
+
+  Future<String?> getReadableLocationFromCoordinates(
+    double latitude,
+    double longitude,
+  ) async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
+        latitude,
+        longitude,
       );
 
       if (placemarks.isNotEmpty) {

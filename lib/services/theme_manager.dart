@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeManager extends ChangeNotifier {
   static const String _themeKey = 'theme_mode';
-  
+
   static final ThemeManager _instance = ThemeManager._internal();
   factory ThemeManager() => _instance;
   ThemeManager._internal();

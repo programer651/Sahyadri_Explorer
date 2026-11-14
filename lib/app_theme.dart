@@ -1,17 +1,17 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   // Brand Colors
   static const Color primary = Color(0xFF061B0E);
   static const Color secondary = Color(0xFFA23F00);
-  
+
   // Light Palette
   static const Color background = Color(0xFFFBF9F5);
   static const Color surface = Color(0xFFFBF9F5);
   static const Color outline = Color(0xFF737973);
   static const Color outlineVariant = Color(0xFFC3C8C1);
-  
+
   // Dark Palette (Outdoor Premium)
   static const Color darkBackground = Color(0xFF0D0F0D);
   static const Color darkSurface = Color(0xFF141A16);
@@ -19,7 +19,7 @@ class AppColors {
   static const Color darkOutline = Color(0xFF8B938B);
   static const Color darkPrimary = Color(0xFFB4CDB8);
   static const Color darkSecondary = Color(0xFFFFB590);
-  
+
   // Shared
   static const Color error = Color(0xFFBA1A1A);
 

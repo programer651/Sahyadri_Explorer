@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../models/expedition_model.dart';
 import '../models/fort_model.dart';
 import '../app_theme.dart';
@@ -11,25 +11,28 @@ class ExpeditionCardWidget extends StatelessWidget {
   final ExpeditionCardType type;
   final double? distanceToUser;
 
-  const ExpeditionCardWidget.recent({
-    super.key,
-    required this.expedition,
-  }) : fort = null, type = ExpeditionCardType.recent, distanceToUser = null;
+  const ExpeditionCardWidget.recent({super.key, required this.expedition})
+    : fort = null,
+      type = ExpeditionCardType.recent,
+      distanceToUser = null;
 
   const ExpeditionCardWidget.suggested({
     super.key,
     required this.fort,
     required this.distanceToUser,
-  }) : expedition = null, type = ExpeditionCardType.suggested;
+  }) : expedition = null,
+       type = ExpeditionCardType.suggested;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final title = type == ExpeditionCardType.recent ? expedition!.fortName : fort!.name;
-    final subtitle = type == ExpeditionCardType.recent 
+    final title = type == ExpeditionCardType.recent
+        ? expedition!.fortName
+        : fort!.name;
+    final subtitle = type == ExpeditionCardType.recent
         ? '${expedition!.distanceKm.toStringAsFixed(1)} km • ${expedition!.completionPercentage >= 0.9 ? 'Conquered' : 'Abandoned'}'
         : '${fort!.difficulty} • ${(distanceToUser! / 1000).toStringAsFixed(1)} km away';
-    
+
     final dateOrTime = type == ExpeditionCardType.recent
         ? _formatDate(expedition!.date)
         : fort!.estimatedTime;
@@ -40,7 +43,9 @@ class ExpeditionCardWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -56,19 +61,25 @@ class ExpeditionCardWidget extends StatelessWidget {
           Container(
             height: 120,
             decoration: BoxDecoration(
-              color: type == ExpeditionCardType.recent ? AppColors.primaryFixedDim : AppColors.secondaryFixedDim,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              color: type == ExpeditionCardType.recent
+                  ? AppColors.primaryFixedDim
+                  : AppColors.secondaryFixedDim,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
               gradient: LinearGradient(
-                colors: type == ExpeditionCardType.recent 
-                  ? [colorScheme.primary, AppColors.primaryFixedDim]
-                  : [colorScheme.secondary, AppColors.secondaryFixedDim],
+                colors: type == ExpeditionCardType.recent
+                    ? [colorScheme.primary, AppColors.primaryFixedDim]
+                    : [colorScheme.secondary, AppColors.secondaryFixedDim],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
             ),
             child: Center(
               child: Icon(
-                type == ExpeditionCardType.recent ? Icons.outlined_flag : Icons.explore,
+                type == ExpeditionCardType.recent
+                    ? Icons.outlined_flag
+                    : Icons.explore,
                 color: Colors.white,
                 size: 48,
               ),
@@ -85,21 +96,28 @@ class ExpeditionCardWidget extends StatelessWidget {
                     Expanded(
                       child: Text(
                         title,
-                        style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 16),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.displaySmall?.copyWith(fontSize: 16),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Text(
                       dateOrTime,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 12),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
                 ),
                 if (type == ExpeditionCardType.suggested) ...[
                   const SizedBox(height: 12),
@@ -137,7 +155,11 @@ class ExpeditionCardWidget extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
+        style: TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.bold,
+          color: colorScheme.onSurfaceVariant,
+        ),
       ),
     );
   }

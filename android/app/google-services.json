@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "499111016019-1nc9aopaaeqs45u9k1hvbp23ljgjc8re.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zenitrek.app",
+            "certificate_hash": "0e5087fa57908240ed976dd38085ba987039727a"
+          }
+        },
+        {
           "client_id": "499111016019-817ktbvbefjlic7n03frnurn5oo7eg7e.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

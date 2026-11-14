@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'screens/map_screen.dart';
 import 'screens/live_tracking_screen.dart';
@@ -6,7 +6,6 @@ import 'screens/profile_screen.dart';
 import 'screens/settings_screen.dart';
 import 'widgets/app_drawer.dart';
 import 'models/fort_model.dart';
-import 'app_theme.dart';
 import 'state/navigation_state_manager.dart';
 
 class MainScaffold extends StatefulWidget {
@@ -18,17 +17,48 @@ class MainScaffold extends StatefulWidget {
 
 class _MainScaffoldState extends State<MainScaffold> {
   Fort? _activeFort;
+  bool _isWalkingMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    NavigationStateManager().isWalkingMode.addListener(_handleWalkingModeChange);
+  }
+
+  void _handleWalkingModeChange() {
+    if (mounted) {
+      setState(() {
+        _isWalkingMode = NavigationStateManager().isWalkingMode.value;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    NavigationStateManager().isWalkingMode.removeListener(_handleWalkingModeChange);
+    super.dispose();
+  }
 
   late final List<Widget> _screens = [
     MapScreen(
       onStartTrek: (fort) {
         setState(() {
           _activeFort = fort;
+          _isWalkingMode = false;
         });
-        NavigationStateManager().selectedIndex.value = 1; // Switch to Live tracking tab
+        NavigationStateManager().navigateToLive(walkingMode: false);
+      },
+      onStartWalk: () {
+        setState(() {
+          _isWalkingMode = true;
+        });
+        NavigationStateManager().navigateToLive(walkingMode: true);
       },
     ),
-    LiveTrackingScreen(activeFort: _activeFort),
+    LiveTrackingScreen(
+      activeFort: _activeFort,
+      initialWalkingMode: _isWalkingMode,
+    ),
     const ProfileScreen(),
   ];
 
@@ -43,21 +73,29 @@ class _MainScaffoldState extends State<MainScaffold> {
           drawer: const AppDrawer(),
           appBar: AppBar(
             shape: Border(
-              bottom: BorderSide(color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3), width: 1),
+              bottom: BorderSide(
+                color: Theme.of(
+                  context,
+                ).colorScheme.outlineVariant.withValues(alpha: 0.3),
+                width: 1,
+              ),
             ),
             leading: Builder(
               builder: (context) => IconButton(
-                icon: Icon(Icons.menu, color: Theme.of(context).colorScheme.primary),
+                icon: Icon(
+                  Icons.menu,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
                 onPressed: () => Scaffold.of(context).openDrawer(),
               ),
             ),
             title: Text(
               'ZENITREK',
               style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    fontSize: 18,
-                    letterSpacing: 2.0,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                fontSize: 18,
+                letterSpacing: 2.0,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
             actions: [
               Padding(
@@ -66,7 +104,9 @@ class _MainScaffoldState extends State<MainScaffold> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const SettingsScreen(),
+                      ),
                     );
                   },
                   borderRadius: BorderRadius.circular(16),
@@ -79,12 +119,23 @@ class _MainScaffoldState extends State<MainScaffold> {
                         height: 32,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-                          image: photoUrl != null 
-                            ? DecorationImage(image: NetworkImage(photoUrl), fit: BoxFit.cover)
-                            : null,
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
+                          image: photoUrl != null
+                              ? DecorationImage(
+                                  image: NetworkImage(photoUrl),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
                         ),
-                        child: photoUrl == null ? Icon(Icons.person, size: 20, color: Theme.of(context).colorScheme.onSurface) : null,
+                        child: photoUrl == null
+                            ? Icon(
+                                Icons.person,
+                                size: 20,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              )
+                            : null,
                       );
                     },
                   ),
@@ -92,8 +143,17 @@ class _MainScaffoldState extends State<MainScaffold> {
               ),
             ],
           ),
-          body: selectedIndex == 1 
-              ? LiveTrackingScreen(activeFort: _activeFort) // dynamically pass active fort
+          body: selectedIndex == 1
+              ? LiveTrackingScreen(
+                  activeFort: _activeFort,
+                  initialWalkingMode: _isWalkingMode,
+                  onModeChanged: (isWalking) {
+                    setState(() {
+                      _isWalkingMode = isWalking;
+                    });
+                    NavigationStateManager().isWalkingMode.value = isWalking;
+                  },
+                ) // dynamically pass active fort & mode
               : _screens[selectedIndex],
           bottomNavigationBar: SafeArea(
             bottom: true,
@@ -109,19 +169,35 @@ class _MainScaffoldState extends State<MainScaffold> {
                 borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.1),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
                 ],
-                border: Border.all(color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outlineVariant.withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildNavItem(0, selectedIndex, Icons.explore_outlined, 'Map'),
+                  _buildNavItem(
+                    0,
+                    selectedIndex,
+                    Icons.explore_outlined,
+                    'Map',
+                  ),
                   _buildNavItem(1, selectedIndex, Icons.directions_run, 'Live'),
-                  _buildNavItem(2, selectedIndex, Icons.person_outline, 'Profile'),
+                  _buildNavItem(
+                    2,
+                    selectedIndex,
+                    Icons.person_outline,
+                    'Profile',
+                  ),
                 ],
               ),
             ),
@@ -131,10 +207,15 @@ class _MainScaffoldState extends State<MainScaffold> {
     );
   }
 
-  Widget _buildNavItem(int index, int selectedIndex, IconData icon, String label) {
+  Widget _buildNavItem(
+    int index,
+    int selectedIndex,
+    IconData icon,
+    String label,
+  ) {
     bool isSelected = selectedIndex == index;
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return GestureDetector(
       onTap: () => NavigationStateManager().selectedIndex.value = index,
       child: Container(
@@ -149,14 +230,18 @@ class _MainScaffoldState extends State<MainScaffold> {
           children: [
             Icon(
               icon,
-              color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+              color: isSelected
+                  ? colorScheme.onPrimary
+                  : colorScheme.onSurfaceVariant,
               size: 24,
               fill: isSelected ? 1 : 0,
             ),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+                color: isSelected
+                    ? colorScheme.onPrimary
+                    : colorScheme.onSurfaceVariant,
                 fontFamily: 'Plus Jakarta Sans',
                 fontWeight: FontWeight.w500,
                 fontSize: 11,

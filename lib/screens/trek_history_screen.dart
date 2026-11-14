@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../models/expedition_model.dart';
-import '../app_theme.dart';
 
 class TrekHistoryScreen extends StatelessWidget {
   final List<Expedition> expeditions;
@@ -15,25 +14,38 @@ class TrekHistoryScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Expedition Journal', style: Theme.of(context).textTheme.displaySmall),
+        title: Text(
+          'Expedition Journal',
+          style: Theme.of(context).textTheme.displaySmall,
+        ),
         centerTitle: true,
       ),
       body: CustomScrollView(
         slivers: [
           if (completed.isNotEmpty) ...[
-            _buildSectionHeader(context, 'COMPLETED EXPEDITIONS', completed.length),
+            _buildSectionHeader(
+              context,
+              'COMPLETED EXPEDITIONS',
+              completed.length,
+            ),
             SliverList(
               delegate: SliverChildBuilderDelegate(
-                (context, index) => _TrekDetailCard(expedition: completed[index]),
+                (context, index) =>
+                    _TrekDetailCard(expedition: completed[index]),
                 childCount: completed.length,
               ),
             ),
           ],
           if (incomplete.isNotEmpty) ...[
-            _buildSectionHeader(context, 'STARTED / INCOMPLETE', incomplete.length),
+            _buildSectionHeader(
+              context,
+              'STARTED / INCOMPLETE',
+              incomplete.length,
+            ),
             SliverList(
               delegate: SliverChildBuilderDelegate(
-                (context, index) => _TrekDetailCard(expedition: incomplete[index]),
+                (context, index) =>
+                    _TrekDetailCard(expedition: incomplete[index]),
                 childCount: incomplete.length,
               ),
             ),
@@ -44,16 +56,26 @@ class TrekHistoryScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.explore, size: 64, color: colorScheme.outlineVariant),
+                    Icon(
+                      Icons.explore,
+                      size: 64,
+                      color: colorScheme.outlineVariant,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       'No entries in your journal yet',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Start your first trek to see achievements!',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.7,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -75,10 +97,10 @@ class TrekHistoryScreen extends StatelessWidget {
             Text(
               title,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    letterSpacing: 1.5,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                letterSpacing: 1.5,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(width: 8),
             Container(
@@ -89,7 +111,11 @@ class TrekHistoryScreen extends StatelessWidget {
               ),
               child: Text(
                 count.toString(),
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.primary),
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.primary,
+                ),
               ),
             ),
           ],
@@ -113,7 +139,9 @@ class _TrekDetailCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -134,11 +162,16 @@ class _TrekDetailCard extends StatelessWidget {
                   children: [
                     Text(
                       expedition.fortName,
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 18),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.displaySmall?.copyWith(fontSize: 18),
                     ),
                     Text(
                       _formatDateTime(expedition.date),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 11, color: colorScheme.onSurfaceVariant),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontSize: 11,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -150,9 +183,24 @@ class _TrekDetailCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStatInfo(context, Icons.alt_route, '${expedition.distanceKm.toStringAsFixed(1)} KM', 'DISTANCE'),
-              _buildStatInfo(context, Icons.schedule, _formatDuration(expedition.duration), 'DURATION'),
-              _buildStatInfo(context, Icons.analytics, '${(expedition.completionPercentage * 100).toInt()}%', 'PROGRESS'),
+              _buildStatInfo(
+                context,
+                Icons.alt_route,
+                '${expedition.distanceKm.toStringAsFixed(1)} KM',
+                'DISTANCE',
+              ),
+              _buildStatInfo(
+                context,
+                Icons.schedule,
+                _formatDuration(expedition.duration),
+                'DURATION',
+              ),
+              _buildStatInfo(
+                context,
+                Icons.analytics,
+                '${(expedition.completionPercentage * 100).toInt()}%',
+                'PROGRESS',
+              ),
             ],
           ),
         ],
@@ -163,7 +211,9 @@ class _TrekDetailCard extends StatelessWidget {
   Widget _buildStatusBadge(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isConquered = expedition.isConquered;
-    final bgColor = isConquered ? colorScheme.primary.withValues(alpha: 0.1) : colorScheme.secondary.withValues(alpha: 0.1);
+    final bgColor = isConquered
+        ? colorScheme.primary.withValues(alpha: 0.1)
+        : colorScheme.secondary.withValues(alpha: 0.1);
     final textColor = isConquered ? colorScheme.primary : colorScheme.secondary;
 
     return Container(
@@ -184,7 +234,12 @@ class _TrekDetailCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatInfo(BuildContext context, IconData icon, String value, String label) {
+  Widget _buildStatInfo(
+    BuildContext context,
+    IconData icon,
+    String value,
+    String label,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,7 +250,11 @@ class _TrekDetailCard extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               label,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 9, letterSpacing: 0.5, color: colorScheme.onSurfaceVariant),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontSize: 9,
+                letterSpacing: 0.5,
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -203,10 +262,10 @@ class _TrekDetailCard extends StatelessWidget {
         Text(
           value,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: colorScheme.primary,
-              ),
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            color: colorScheme.primary,
+          ),
         ),
       ],
     );
