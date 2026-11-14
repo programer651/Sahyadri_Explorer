@@ -105,14 +105,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Logout',
                 onTap: () async {
                   await FirebaseAuth.instance.signOut();
+                  // AuthGate at the root listens to authStateChanges and
+                  // automatically rebuilds to OnboardingScreen. Clear the
+                  // entire navigation stack so the AuthGate is on top.
                   if (mounted) {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const OnboardingScreen(),
-                      ),
-                      (route) => false,
-                    );
+                    Navigator.of(context)
+                        .popUntil((route) => route.isFirst);
                   }
                 },
                 titleColor: colorScheme.error,
