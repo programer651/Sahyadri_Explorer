@@ -8,6 +8,7 @@ import '../services/gps_tracking_service.dart';
 import '../services/walking_storage_service.dart';
 import '../services/trek_timer_service.dart';
 import '../services/location_service.dart';
+import '../services/live_session_storage_service.dart';
 
 enum WalkingState { ready, walking, paused, completed }
 
@@ -80,10 +81,20 @@ class WalkingSession {
 }
 
 class WalkingStateManager extends ChangeNotifier {
-  final GeolocatorTrackingService _trackingService;
+  // Singleton instance
+  static final WalkingStateManager _instance = WalkingStateManager._internal();
+  factory WalkingStateManager({GeolocatorTrackingService? trackingService}) {
+    if (trackingService != null) {
+      _instance._trackingService = trackingService;
+    }
+    return _instance;
+  }
+
+  GeolocatorTrackingService _trackingService = GeolocatorTrackingService();
   final WalkingStorageService _storageService = WalkingStorageService();
   final TrekTimerService _timerService = TrekTimerService();
   final LocationService _locationService = LocationService();
+  final LiveSessionStorageService _sessionStorage = LiveSessionStorageService();
 
   WalkingSession? _session;
   WalkingState _state = WalkingState.ready;
@@ -102,9 +113,9 @@ class WalkingStateManager extends ChangeNotifier {
 
   LatLng? _lastValidPoint;
   DateTime? _lastValidPointTime;
+  DateTime? _lastSaveTime;
 
-  WalkingStateManager({GeolocatorTrackingService? trackingService})
-      : _trackingService = trackingService ?? GeolocatorTrackingService() {
+  WalkingStateManager._internal() {
     _timerSubscription = _timerService.durationStream.listen((duration) {
       if (_state == WalkingState.walking) {
         _session = _session?.copyWith(timeElapsed: duration);
@@ -129,16 +140,62 @@ class WalkingStateManager extends ChangeNotifier {
   bool get isPaused => _state == WalkingState.paused;
   bool get isCompleted => _state == WalkingState.completed;
 
+  /// Restores active walking session from persistent storage
+  Future<bool> restoreActiveSession() async {
+    final activeData = await _sessionStorage.loadActiveWalkingSession();
+    if (activeData == null) return false;
+
+    _session = activeData.session;
+    _state = activeData.state;
+    currentLocation = activeData.currentLocation;
+    _lastValidPoint = _session?.routePoints.isNotEmpty == true
+        ? _session!.routePoints.last
+        : _session?.startLocation;
+    _lastValidPointTime = DateTime.now();
+
+    final hasPermission = await checkAndRequestPermissions();
+    if (hasPermission) {
+      await _startTrackingStream();
+    }
+
+    if (_state == WalkingState.walking) {
+      // Resume timer with existing duration
+      _timerService.start(initialDuration: _session!.timeElapsed);
+    }
+
+    notifyListeners();
+    return true;
+  }
+
   Future<void> initialize() async {
+    // If already walking or paused, do not re-initialize or reset
+    if (isWalking || isPaused) {
+      return;
+    }
+
+    // Try restoring an active session first
+    if (_session == null) {
+      final restored = await restoreActiveSession();
+      if (restored) return;
+    }
+
     _state = WalkingState.ready;
-    _session = WalkingSession(startTime: DateTime.now());
+    _session ??= WalkingSession(startTime: DateTime.now());
     notifyListeners();
 
     final hasPermission = await checkAndRequestPermissions();
     if (!hasPermission) return;
 
+    await _startTrackingStream();
+  }
+
+  Future<void> _startTrackingStream() async {
     try {
-      await _trackingService.startTracking(const LatLng(0, 0));
+      await _trackingService.startTracking(
+        const LatLng(0, 0),
+        notificationTitle: 'ZeniTrek Walking Activity',
+        notificationText: 'Tracking your walking activity in the background...',
+      );
 
       _positionSubscription?.cancel();
       _positionSubscription = _trackingService.positionStream.listen(
@@ -226,6 +283,7 @@ class WalkingStateManager extends ChangeNotifier {
       // Asynchronously resolve start location name
       _resolveStartLocationName(newPoint);
 
+      _persistSession();
       notifyListeners();
       return;
     }
@@ -247,7 +305,6 @@ class WalkingStateManager extends ChangeNotifier {
       final calculatedSpeedMs = deltaMeters / timeDeltaSeconds;
       // Walking / running speed rarely exceeds 7 m/s (25 km/h)
       if (calculatedSpeedMs > 7.0 && deltaMeters > 20.0) {
-        // Discard spike
         return;
       }
     }
@@ -291,6 +348,13 @@ class WalkingStateManager extends ChangeNotifier {
       routePoints: updatedPoints,
     );
 
+    // Throttled persistence (save every 5 seconds)
+    final now = DateTime.now();
+    if (_lastSaveTime == null || now.difference(_lastSaveTime!).inSeconds >= 5) {
+      _lastSaveTime = now;
+      _persistSession();
+    }
+
     notifyListeners();
   }
 
@@ -301,6 +365,7 @@ class WalkingStateManager extends ChangeNotifier {
     );
     if (name != null && _session != null) {
       _session = _session!.copyWith(startLocationName: name);
+      _persistSession();
       notifyListeners();
     }
   }
@@ -326,6 +391,11 @@ class WalkingStateManager extends ChangeNotifier {
     // Start timer immediately from 0
     _timerService.stop();
     _timerService.start();
+
+    // Ensure tracking is running with notification
+    _startTrackingStream();
+
+    _persistSession();
     notifyListeners();
   }
 
@@ -338,6 +408,7 @@ class WalkingStateManager extends ChangeNotifier {
       isPaused: true,
       currentSpeedKmh: 0.0,
     );
+    _persistSession();
     notifyListeners();
   }
 
@@ -348,6 +419,7 @@ class WalkingStateManager extends ChangeNotifier {
     _lastValidPointTime = DateTime.now();
     _state = WalkingState.walking;
     _session = _session?.copyWith(isPaused: false);
+    _persistSession();
     notifyListeners();
   }
 
@@ -355,6 +427,9 @@ class WalkingStateManager extends ChangeNotifier {
     _trackingService.stopTracking();
     _timerService.stop();
     _state = WalkingState.completed;
+
+    // Clear active session immediately from persistent storage
+    await _sessionStorage.clearActiveSession();
 
     final now = DateTime.now();
     final endLoc = currentLocation ?? _session?.endLocation ?? _session?.startLocation ?? const LatLng(0, 0);
@@ -413,11 +488,28 @@ class WalkingStateManager extends ChangeNotifier {
     _session = WalkingSession(startTime: DateTime.now());
     _lastValidPoint = null;
     _lastValidPointTime = null;
+    _sessionStorage.clearActiveSession();
     initialize();
+  }
+
+  void saveCurrentState() {
+    _persistSession();
+  }
+
+  void _persistSession() {
+    if (_session == null) return;
+    if (_state == WalkingState.completed) return;
+
+    _sessionStorage.saveActiveWalkingSession(
+      session: _session!,
+      state: _state,
+      currentLocation: currentLocation,
+    );
   }
 
   @override
   void dispose() {
+    // Note: Do not stop tracking here if active, since WalkingStateManager is a singleton
     _trackingService.stopTracking();
     _timerService.dispose();
     _positionSubscription?.cancel();

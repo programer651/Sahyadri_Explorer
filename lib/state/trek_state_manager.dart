@@ -7,13 +7,24 @@ import '../services/gps_tracking_service.dart';
 import '../services/trek_progress_service.dart';
 import '../services/conquest_storage_service.dart';
 import '../services/trek_timer_service.dart';
+import '../services/live_session_storage_service.dart';
 
 enum TrekState { approaching, ready, trekking, paused, completed, abandoned }
 
 class TrekStateManager extends ChangeNotifier {
-  final LocationTrackingService _trackingService;
+  // Singleton instance
+  static final TrekStateManager _instance = TrekStateManager._internal();
+  factory TrekStateManager({LocationTrackingService? trackingService}) {
+    if (trackingService != null) {
+      _instance._trackingService = trackingService;
+    }
+    return _instance;
+  }
+
+  LocationTrackingService _trackingService = GeolocatorTrackingService();
   final ConquestStorageService _storageService = ConquestStorageService();
   final TrekTimerService _timerService = TrekTimerService();
+  final LiveSessionStorageService _sessionStorage = LiveSessionStorageService();
 
   TrekSession? _session;
   TrekState _state = TrekState.approaching;
@@ -26,9 +37,9 @@ class TrekStateManager extends ChangeNotifier {
 
   double distanceToFortMeters = 0.0;
   double completionPercentage = 0.0;
+  DateTime? _lastSaveTime;
 
-  TrekStateManager({LocationTrackingService? trackingService})
-    : _trackingService = trackingService ?? GeolocatorTrackingService() {
+  TrekStateManager._internal() {
     _timerSubscription = _timerService.durationStream.listen((duration) {
       if (_state == TrekState.trekking) {
         _session = _session?.copyWith(timeElapsed: duration);
@@ -47,13 +58,51 @@ class TrekStateManager extends ChangeNotifier {
   bool get isCompleted => _state == TrekState.completed;
   bool get isAbandoned => _state == TrekState.abandoned;
 
+  /// Restores active trek session from persistent storage
+  Future<bool> restoreActiveSession() async {
+    final activeData = await _sessionStorage.loadActiveTrekSession();
+    if (activeData == null) return false;
+
+    _session = activeData.session;
+    _state = activeData.state;
+    distanceToFortMeters = activeData.distanceToFortMeters;
+    completionPercentage = activeData.completionPercentage;
+    currentLocation = activeData.currentLocation;
+
+    if (_state == TrekState.trekking) {
+      // Resume timer and tracking with existing elapsed duration
+      _timerService.start(initialDuration: _session!.timeElapsed);
+      await _startTrackingStream(_session!.activeFort);
+    } else if (_state == TrekState.approaching || _state == TrekState.ready) {
+      await _startTrackingStream(_session!.activeFort);
+    }
+
+    notifyListeners();
+    return true;
+  }
+
   Future<void> initialize(Fort activeFort) async {
+    // If a trek is already active or paused for the same fort, do not reset!
+    if ((isTrekking || isPaused) && _session?.activeFort.id == activeFort.id) {
+      return;
+    }
+
     _session = TrekSession(activeFort: activeFort, startTime: DateTime.now());
     _state = TrekState.approaching;
     notifyListeners();
 
+    await _startTrackingStream(activeFort);
+    _persistSession();
+  }
+
+  Future<void> _startTrackingStream(Fort fort) async {
     try {
-      await _trackingService.startTracking(activeFort.location);
+      _locationSubscription?.cancel();
+      await _trackingService.startTracking(
+        fort.location,
+        notificationTitle: 'ZeniTrek Fort Trek: ${fort.name}',
+        notificationText: 'Tracking your ascent to ${fort.name}...',
+      );
 
       _locationSubscription = _trackingService.locationStream.listen((
         location,
@@ -69,11 +118,26 @@ class TrekStateManager extends ChangeNotifier {
 
         if (_state == TrekState.approaching && distanceToFortMeters <= 1000) {
           _state = TrekState.ready;
+          _persistSession();
         }
 
         if (_state == TrekState.trekking) {
-          final updatedPoints = List<LatLng>.from(_session!.routePoints)
-            ..add(location);
+          final updatedPoints = List<LatLng>.from(_session!.routePoints);
+
+          // Prevent duplicate or micro-jitter points (< 2.0 meters)
+          if (updatedPoints.isNotEmpty) {
+            final deltaMeters = distanceCalc.as(
+              LengthUnit.Meter,
+              updatedPoints.last,
+              location,
+            );
+            if (deltaMeters < 2.0) {
+              notifyListeners();
+              return;
+            }
+          }
+
+          updatedPoints.add(location);
 
           double newDistance = _session!.distanceCoveredKm;
           if (updatedPoints.length > 1) {
@@ -101,6 +165,14 @@ class TrekStateManager extends ChangeNotifier {
             distanceCoveredKm: newDistance,
             currentSpeedKmh: newSpeed,
           );
+
+          // Throttled persistence (save every 5 seconds during active movement)
+          final now = DateTime.now();
+          if (_lastSaveTime == null ||
+              now.difference(_lastSaveTime!).inSeconds >= 5) {
+            _lastSaveTime = now;
+            _persistSession();
+          }
 
           if (completionPercentage >= 0.90) {
             endTrek(isVictoryCheck: true);
@@ -131,6 +203,7 @@ class TrekStateManager extends ChangeNotifier {
       _session!.routePoints.add(currentLocation!);
     }
 
+    _persistSession();
     notifyListeners();
   }
 
@@ -139,7 +212,8 @@ class TrekStateManager extends ChangeNotifier {
     _trackingService.pauseTracking();
     _timerService.pause();
     _state = TrekState.paused;
-    _session = _session!.copyWith(isPaused: true);
+    _session = _session!.copyWith(isPaused: true, currentSpeedKmh: 0.0);
+    _persistSession();
     notifyListeners();
   }
 
@@ -149,6 +223,7 @@ class TrekStateManager extends ChangeNotifier {
     _timerService.resume();
     _state = TrekState.trekking;
     _session = _session!.copyWith(isPaused: false);
+    _persistSession();
     notifyListeners();
   }
 
@@ -156,6 +231,9 @@ class TrekStateManager extends ChangeNotifier {
     _trackingService.stopTracking();
     _timerService.stop();
     _locationSubscription?.cancel();
+
+    // Clear active session from persistent storage on explicit end
+    await _sessionStorage.clearActiveSession();
 
     if (completionPercentage >= 0.90 || isVictoryCheck) {
       _state = TrekState.completed;
@@ -182,8 +260,36 @@ class TrekStateManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  void reset() {
+    _session = null;
+    _state = TrekState.approaching;
+    currentLocation = null;
+    distanceToFortMeters = 0.0;
+    completionPercentage = 0.0;
+    _sessionStorage.clearActiveSession();
+    notifyListeners();
+  }
+
+  void saveCurrentState() {
+    _persistSession();
+  }
+
+  void _persistSession() {
+    if (_session == null) return;
+    if (_state == TrekState.completed || _state == TrekState.abandoned) return;
+
+    _sessionStorage.saveActiveTrekSession(
+      session: _session!,
+      state: _state,
+      distanceToFortMeters: distanceToFortMeters,
+      completionPercentage: completionPercentage,
+      currentLocation: currentLocation,
+    );
+  }
+
   @override
   void dispose() {
+    // Note: Do not stop tracking here if active, since TrekStateManager is a singleton
     _trackingService.stopTracking();
     _timerService.dispose();
     _locationSubscription?.cancel();

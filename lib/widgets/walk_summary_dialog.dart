@@ -384,6 +384,7 @@ class WalkSummaryDialog extends StatelessWidget {
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     onPressed: () {
+                      WalkingStateManager().reset();
                       NavigationStateManager().navigateToMap();
                     },
                     icon: const Icon(Icons.explore),

@@ -29,7 +29,7 @@ class LiveTrackingScreen extends StatefulWidget {
 }
 
 class _LiveTrackingScreenState extends State<LiveTrackingScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final MapController _mapController = MapController();
   late final TrekStateManager _trekStateManager;
   late final WalkingStateManager _walkingStateManager;
@@ -41,34 +41,76 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
   @override
   void initState() {
     super.initState();
-    _currentMode = widget.initialWalkingMode || widget.activeFort == null
-        ? LiveTrackingMode.walking
-        : LiveTrackingMode.fortTrek;
+    WidgetsBinding.instance.addObserver(this);
 
-    _trekStateManager = TrekStateManager(
-      trackingService: GeolocatorTrackingService(),
-    );
-    _walkingStateManager = WalkingStateManager(
-      trackingService: GeolocatorTrackingService(),
-    );
+    _trekStateManager = TrekStateManager();
+    _walkingStateManager = WalkingStateManager();
+
+    // Check if an active session is already ongoing
+    if (_trekStateManager.isTrekking || _trekStateManager.isPaused) {
+      _currentMode = LiveTrackingMode.fortTrek;
+    } else if (_walkingStateManager.isWalking || _walkingStateManager.isPaused) {
+      _currentMode = LiveTrackingMode.walking;
+    } else {
+      _currentMode = widget.initialWalkingMode || widget.activeFort == null
+          ? LiveTrackingMode.walking
+          : LiveTrackingMode.fortTrek;
+
+      if (widget.activeFort != null) {
+        _trekStateManager.initialize(widget.activeFort!);
+      }
+      _walkingStateManager.initialize();
+    }
 
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
 
-    if (widget.activeFort != null) {
-      _trekStateManager.initialize(widget.activeFort!);
-    }
-    _walkingStateManager.initialize();
-
     _trekStateManager.addListener(_onTrekStateChanged);
     _walkingStateManager.addListener(_onWalkingStateChanged);
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      _trekStateManager.saveCurrentState();
+      _walkingStateManager.saveCurrentState();
+    } else if (state == AppLifecycleState.resumed) {
+      if (_currentMode == LiveTrackingMode.fortTrek) {
+        _onTrekStateChanged();
+      } else {
+        _onWalkingStateChanged();
+      }
+    }
+  }
+
+  @override
   void didUpdateWidget(LiveTrackingScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    final bool hasActiveTrek =
+        _trekStateManager.isTrekking || _trekStateManager.isPaused;
+    final bool hasActiveWalk =
+        _walkingStateManager.isWalking || _walkingStateManager.isPaused;
+
+    // Do not disrupt ongoing sessions on widget updates
+    if (hasActiveTrek) {
+      if (_currentMode != LiveTrackingMode.fortTrek) {
+        setState(() => _currentMode = LiveTrackingMode.fortTrek);
+      }
+      return;
+    }
+
+    if (hasActiveWalk) {
+      if (_currentMode != LiveTrackingMode.walking) {
+        setState(() => _currentMode = LiveTrackingMode.walking);
+      }
+      return;
+    }
+
     if (widget.initialWalkingMode != oldWidget.initialWalkingMode) {
       setState(() {
         _currentMode = widget.initialWalkingMode
@@ -130,10 +172,10 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _trekStateManager.removeListener(_onTrekStateChanged);
     _walkingStateManager.removeListener(_onWalkingStateChanged);
-    _trekStateManager.dispose();
-    _walkingStateManager.dispose();
+    // Note: Do not dispose singleton state managers here so active sessions continue
     _pulseController.dispose();
     super.dispose();
   }

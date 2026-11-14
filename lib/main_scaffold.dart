@@ -7,6 +7,9 @@ import 'screens/settings_screen.dart';
 import 'widgets/app_drawer.dart';
 import 'models/fort_model.dart';
 import 'state/navigation_state_manager.dart';
+import 'state/trek_state_manager.dart';
+import 'state/walking_state_manager.dart';
+import 'services/live_session_storage_service.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -15,14 +18,52 @@ class MainScaffold extends StatefulWidget {
   State<MainScaffold> createState() => _MainScaffoldState();
 }
 
-class _MainScaffoldState extends State<MainScaffold> {
+class _MainScaffoldState extends State<MainScaffold>
+    with WidgetsBindingObserver {
   Fort? _activeFort;
   bool _isWalkingMode = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     NavigationStateManager().isWalkingMode.addListener(_handleWalkingModeChange);
+    _restoreActiveSessionIfAny();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      TrekStateManager().saveCurrentState();
+      WalkingStateManager().saveCurrentState();
+    }
+  }
+
+  Future<void> _restoreActiveSessionIfAny() async {
+    final sessionStorage = LiveSessionStorageService();
+    final activeType = await sessionStorage.getActiveSessionType();
+    if (activeType == ActiveSessionType.fortTrek) {
+      final trekManager = TrekStateManager();
+      final restored = await trekManager.restoreActiveSession();
+      if (restored && mounted) {
+        setState(() {
+          _activeFort = trekManager.session?.activeFort;
+          _isWalkingMode = false;
+        });
+        NavigationStateManager().isWalkingMode.value = false;
+      }
+    } else if (activeType == ActiveSessionType.walking) {
+      final walkingManager = WalkingStateManager();
+      final restored = await walkingManager.restoreActiveSession();
+      if (restored && mounted) {
+        setState(() {
+          _isWalkingMode = true;
+        });
+        NavigationStateManager().isWalkingMode.value = true;
+      }
+    }
   }
 
   void _handleWalkingModeChange() {
@@ -35,32 +76,10 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     NavigationStateManager().isWalkingMode.removeListener(_handleWalkingModeChange);
     super.dispose();
   }
-
-  late final List<Widget> _screens = [
-    MapScreen(
-      onStartTrek: (fort) {
-        setState(() {
-          _activeFort = fort;
-          _isWalkingMode = false;
-        });
-        NavigationStateManager().navigateToLive(walkingMode: false);
-      },
-      onStartWalk: () {
-        setState(() {
-          _isWalkingMode = true;
-        });
-        NavigationStateManager().navigateToLive(walkingMode: true);
-      },
-    ),
-    LiveTrackingScreen(
-      activeFort: _activeFort,
-      initialWalkingMode: _isWalkingMode,
-    ),
-    const ProfileScreen(),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -143,18 +162,47 @@ class _MainScaffoldState extends State<MainScaffold> {
               ),
             ],
           ),
-          body: selectedIndex == 1
-              ? LiveTrackingScreen(
-                  activeFort: _activeFort,
-                  initialWalkingMode: _isWalkingMode,
-                  onModeChanged: (isWalking) {
-                    setState(() {
-                      _isWalkingMode = isWalking;
-                    });
-                    NavigationStateManager().isWalkingMode.value = isWalking;
-                  },
-                ) // dynamically pass active fort & mode
-              : _screens[selectedIndex],
+          body: IndexedStack(
+            index: selectedIndex,
+            children: [
+              MapScreen(
+                onStartTrek: (fort) {
+                  final trekManager = TrekStateManager();
+                  if (trekManager.isTrekking || trekManager.isPaused) {
+                    NavigationStateManager().navigateToLive(walkingMode: false);
+                    return;
+                  }
+                  setState(() {
+                    _activeFort = fort;
+                    _isWalkingMode = false;
+                  });
+                  NavigationStateManager().navigateToLive(walkingMode: false);
+                },
+                onStartWalk: () {
+                  final walkingManager = WalkingStateManager();
+                  if (walkingManager.isWalking || walkingManager.isPaused) {
+                    NavigationStateManager().navigateToLive(walkingMode: true);
+                    return;
+                  }
+                  setState(() {
+                    _isWalkingMode = true;
+                  });
+                  NavigationStateManager().navigateToLive(walkingMode: true);
+                },
+              ),
+              LiveTrackingScreen(
+                activeFort: _activeFort ?? TrekStateManager().session?.activeFort,
+                initialWalkingMode: _isWalkingMode,
+                onModeChanged: (isWalking) {
+                  setState(() {
+                    _isWalkingMode = isWalking;
+                  });
+                  NavigationStateManager().isWalkingMode.value = isWalking;
+                },
+              ),
+              const ProfileScreen(),
+            ],
+          ),
           bottomNavigationBar: SafeArea(
             bottom: true,
             child: Container(

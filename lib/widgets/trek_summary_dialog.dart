@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import '../models/trek_session_model.dart';
 import '../state/navigation_state_manager.dart';
+import '../state/trek_state_manager.dart';
 
 class TrekSummaryDialog extends StatelessWidget {
   final TrekSession session;
@@ -102,6 +103,7 @@ class TrekSummaryDialog extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
+                    TrekStateManager().reset();
                     NavigationStateManager().navigateToProfile();
                   },
                   icon: const Icon(Icons.person),
@@ -121,6 +123,7 @@ class TrekSummaryDialog extends StatelessWidget {
                 width: double.infinity,
                 child: TextButton.icon(
                   onPressed: () {
+                    TrekStateManager().reset();
                     NavigationStateManager().navigateToMap();
                   },
                   icon: const Icon(Icons.explore),

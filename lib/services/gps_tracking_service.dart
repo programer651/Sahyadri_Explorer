@@ -1,11 +1,16 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 abstract class LocationTrackingService {
   Stream<LatLng> get locationStream;
-  Future<void> startTracking(LatLng destination);
+  Future<void> startTracking(
+    LatLng destination, {
+    String? notificationTitle,
+    String? notificationText,
+  });
   void pauseTracking();
   void resumeTracking();
   void stopTracking();
@@ -24,7 +29,11 @@ class GeolocatorTrackingService implements LocationTrackingService {
   Stream<Position> get positionStream => _positionController.stream;
 
   @override
-  Future<void> startTracking(LatLng destination) async {
+  Future<void> startTracking(
+    LatLng destination, {
+    String? notificationTitle,
+    String? notificationText,
+  }) async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -46,6 +55,9 @@ class GeolocatorTrackingService implements LocationTrackingService {
       throw Exception('Location permissions are permanently denied. We cannot request permissions. Please enable them in app settings.');
     }
 
+    // Cancel existing stream before starting a new one
+    _positionStream?.cancel();
+
     // Permissions granted. Begin tracking.
     _isPaused = false;
     
@@ -56,12 +68,34 @@ class GeolocatorTrackingService implements LocationTrackingService {
     _locationController.add(LatLng(initialPos.latitude, initialPos.longitude));
     _positionController.add(initialPos);
 
-    // Listen to continuous stream
-    _positionStream = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
+    // Build location settings with Android foreground service notification support
+    late final LocationSettings locationSettings;
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      locationSettings = AndroidSettings(
         accuracy: LocationAccuracy.bestForNavigation,
         distanceFilter: 2, // Emit every 2 meters of movement
-      ),
+        intervalDuration: const Duration(seconds: 2),
+        foregroundNotificationConfig: ForegroundNotificationConfig(
+          notificationTitle: notificationTitle ?? 'ZeniTrek Active Session',
+          notificationText: notificationText ?? 'Live tracking is active in the background',
+          notificationIcon: const AndroidResource(
+            name: 'ic_launcher',
+            defType: 'mipmap',
+          ),
+          enableWakeLock: true,
+          setOngoing: true,
+        ),
+      );
+    } else {
+      locationSettings = const LocationSettings(
+        accuracy: LocationAccuracy.bestForNavigation,
+        distanceFilter: 2,
+      );
+    }
+
+    // Listen to continuous stream
+    _positionStream = Geolocator.getPositionStream(
+      locationSettings: locationSettings,
     ).listen((Position position) {
       if (_isPaused) return;
       _locationController.add(LatLng(position.latitude, position.longitude));
@@ -103,7 +137,11 @@ class MockGpsTrackingService implements LocationTrackingService {
   Stream<LatLng> get locationStream => _locationController.stream;
 
   @override
-  Future<void> startTracking(LatLng destination) async {
+  Future<void> startTracking(
+    LatLng destination, {
+    String? notificationTitle,
+    String? notificationText,
+  }) async {
     _destination = destination;
     _currentLocation = LatLng(
       destination.latitude - 0.015,
