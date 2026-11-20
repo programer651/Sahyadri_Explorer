@@ -328,5 +328,16 @@
     "estimatedTime": "3-4 hours",
     "height": "1,450 m",
     "description": "The second highest fort in Maharashtra featuring an impressive rock-cut tunnel."
+  },
+  {
+    "id": "dev_society_fort",
+    "name": "🧪 Society Test Fort",
+    "latitude": 18.445427142715225,
+    "longitude": 73.85709079781567,
+    "district": "Pune",
+    "difficulty": "Easy",
+    "estimatedTime": "0.1 hours",
+    "height": "Ground Level",
+    "description": "Local dev-only test fort placed at society building. Used to test the full trek flow (approaching → ready → trekking → completion) without visiting a real fort. NOT visible in production builds."
   }
 ]
